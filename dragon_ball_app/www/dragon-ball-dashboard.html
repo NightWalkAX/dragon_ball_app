@@ -1,0 +1,960 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">🐉 Dragon Ball Dashboard</h1>
+        <p>Explore and manage Dragon Ball characters and their transformations</p>
+    </div>
+
+    <!-- Dashboard Controls -->
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <button class="btn sync-button mr-3" onclick="sync_all_characters()">
+                <i class="fa fa-sync-alt"></i> Sync All Characters
+            </button>
+            <button class="btn sync-button" onclick="load_dashboard_data()">
+                <i class="fa fa-refresh"></i> Refresh Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard-content">
+        <!-- Content will be loaded dynamically -->
+    </div>
+
+    <!-- Character Details Modal -->
+    <div class="modal fade" id="characterModal" tabindex="-1" role="dialog" aria-labelledby="characterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="characterModalLabel">Character Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="characterModalBody">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p>Loading character details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize dashboard when page loads
+frappe.ready(function() {
+    load_dashboard_data();
+    setup_search();
+});
+
+function show_loading() {
+    $('#loading-spinner').show();
+    $('#dashboard-content').hide();
+}
+
+function hide_loading() {
+    $('#loading-spinner').hide();
+    $('#dashboard-content').show();
+}
+
+function sync_all_characters() {
+    show_loading();
+    
+    frappe.call({
+        method: 'dragon_ball_app.db_app.api.dragon_ball_api.sync_all_characters',
+        callback: function(r) {
+            hide_loading();
+            if (r.message && r.message.status === 'success') {
+                frappe.show_alert({
+                    message: 'Successfully synced ' + r.message.synced_count + ' characters!',
+                    indicator: 'green'
+                });
+                load_dashboard_data(); // Refresh dashboard
+            }
+        },
+        error: function(r) {
+            hide_loading();
+            frappe.show_alert({
+                message: 'Error syncing characters',
+                indicator: 'red'
+            });
+        }
+    });
+}
+
+function load_dashboard_data() {
+    show_loading();
+    
+    frappe.call({
+        method: 'dragon_ball_app.db_app.dashboard.dashboard.get_dashboard_data',
+        callback: function(r) {
+            hide_loading();
+            if (r.message) {
+                render_dashboard(r.message);
+            }
+        },
+        error: function(r) {
+            hide_loading();
+            $('#dashboard-content').html('<div class="alert alert-danger">Error loading dashboard data</div>');
+        }
+    });
+}
+
+function render_dashboard(data) {
+    var dashboard_html = `
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <h2 class="text-white">${data.total_characters}</h2>
+                    <p>Total Characters</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Characters by Race</h5>
+                    </div>
+                    <div class="card-body">
+                        ${render_race_distribution(data.race_distribution)}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Top Ki Characters</h5>
+                    </div>
+                    <div class="card-body">
+                        ${render_top_characters(data.top_ki_characters)}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Recent Characters</h5>
+                    </div>
+                    <div class="card-body">
+                        ${render_recent_characters(data.recent_characters)}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Search Characters</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-container">
+                            <input type="text" id="character-search" class="form-control search-input" placeholder="Search by name or race...">
+                        </div>
+                        <div id="search-results"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('#dashboard-content').html(dashboard_html);
+}
+
+function render_race_distribution(race_data) {
+    if (!race_data || race_data.length === 0) {
+        return '<p>No race data available</p>';
+    }
+    
+    var html = '<div class="list-group">';
+    race_data.forEach(function(item) {
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center">
+            ${item.race}
+            <span class="race-badge">${item.count}</span>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+function render_top_characters(characters) {
+    if (!characters || characters.length === 0) {
+        return '<p>No character data available</p>';
+    }
+    
+    var html = '<div class="list-group">';
+    characters.forEach(function(char) {
+        // Ensure character_name is properly escaped and cleaned
+        var clean_name = (char.character_name || '').replace(/'/g, "\\'");
+        html += `<div class="list-group-item character-item" onclick="view_character_details('${clean_name}')">
+            <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">${char.character_name}</h6>
+                <small>Ki: ${char.ki}</small>
+            </div>
+            <p class="mb-1">Race: ${char.race}</p>
+            <small>Max Ki: ${char.max_ki}</small>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+function render_recent_characters(characters) {
+    if (!characters || characters.length === 0) {
+        return '<p>No recent characters</p>';
+    }
+    
+    var html = '<div class="row">';
+    characters.forEach(function(char) {
+        // Ensure character_name is properly escaped and cleaned
+        var clean_name = (char.character_name || '').replace(/'/g, "\\'");
+        html += `<div class="col-sm-6 col-lg-4 mb-3">
+            <div class="character-card card" onclick="view_character_details('${clean_name}')">
+                ${char.image_url ? `<img src="${char.image_url}" class="character-image card-img-top">` : ''}
+                <div class="card-body">
+                    <h6 class="card-title">${char.character_name}</h6>
+                    <p class="card-text">
+                        <span class="race-badge">${char.race || 'Unknown'}</span>
+                        <span class="gender-badge ml-2">${char.gender || 'Unknown'}</span>
+                    </p>
+                </div>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+function setup_search() {
+    $(document).on('input', '#character-search', function() {
+        var search_term = $(this).val();
+        if (search_term.length > 2) {
+            search_characters(search_term);
+        } else {
+            $('#search-results').html('');
+        }
+    });
+}
+
+function search_characters(search_term) {
+    frappe.call({
+        method: 'dragon_ball_app.db_app.dashboard.dashboard.search_characters',
+        args: {
+            search_term: search_term
+        },
+        callback: function(r) {
+            if (r.message) {
+                render_search_results(r.message);
+            }
+        }
+    });
+}
+
+function render_search_results(characters) {
+    if (!characters || characters.length === 0) {
+        $('#search-results').html('<p>No characters found</p>');
+        return;
+    }
+    
+    var html = '<div class="list-group">';
+    characters.forEach(function(char) {
+        // Ensure character_name is properly escaped and cleaned
+        var clean_name = (char.character_name || '').replace(/'/g, "\\'");
+        html += `<div class="list-group-item list-group-item-action" onclick="view_character_details('${clean_name}')">
+            <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">${char.character_name}</h6>
+                <small>Ki: ${char.ki || 'Unknown'}</small>
+            </div>
+            <p class="mb-1">
+                <span class="race-badge">${char.race || 'Unknown'}</span>
+                <span class="gender-badge ml-2">${char.gender || 'Unknown'}</span>
+            </p>
+        </div>`;
+    });
+    html += '</div>';
+    
+    $('#search-results').html(html);
+}
+
+function view_character_details(character_name) {
+    // Clean and validate character name
+    if (!character_name || character_name.trim() === '') {
+        frappe.show_alert({
+            message: 'Invalid character name',
+            indicator: 'red'
+        });
+        return;
+    }
+    
+    // Clean the character name
+    var cleaned_name = character_name.trim();
+    
+    // Show modal immediately with loading state
+    $('#characterModalLabel').text('Loading...');
+    $('#characterModalBody').html(`
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Loading details for "${cleaned_name}"...</p>
+        </div>
+    `);
+    $('#characterModal').modal('show');
+    
+    console.log('Requesting character details for:', cleaned_name); // Debug log
+    console.log('Original character name:', character_name); // Debug log
+    
+    // Try get_character_details first
+    frappe.call({
+        method: 'dragon_ball_app.db_app.dashboard.dashboard.get_character_details',
+        args: {
+            character_name: cleaned_name
+        },
+        callback: function(r) {
+            console.log('Full response received:', r); // Debug log
+            console.log('Response message:', r.message); // Debug log
+            
+            if (r.message && r.message.character) {
+                show_character_modal(r.message);
+            } else {
+                // If get_character_details fails, try search method as fallback
+                console.log('get_character_details failed, trying search method...');
+                try_search_fallback(cleaned_name, character_name, r);
+            }
+        },
+        error: function(r) {
+            console.error('Error loading character:', r); // Debug log
+            
+            // If there's an error, try search method as fallback
+            console.log('get_character_details error, trying search method...');
+            try_search_fallback(cleaned_name, character_name, r);
+        }
+    });
+}
+
+function try_search_fallback(cleaned_name, original_name, original_response) {
+    console.log('Trying search fallback for:', cleaned_name);
+    
+    // Update loading message
+    $('#characterModalBody').html(`
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Searching for "${cleaned_name}" using alternative method...</p>
+        </div>
+    `);
+    
+    frappe.call({
+        method: 'dragon_ball_app.db_app.dashboard.dashboard.search_characters',
+        args: {
+            search_term: cleaned_name
+        },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                // Find exact match
+                var exact_match = r.message.find(char => 
+                    char.character_name.toLowerCase() === cleaned_name.toLowerCase()
+                );
+                
+                if (exact_match) {
+                    console.log('Found exact match using search method:', exact_match);
+                    
+                    // Create a character object in the expected format
+                    var character_data = {
+                        character: {
+                            character_name: exact_match.character_name,
+                            race: exact_match.race,
+                            gender: exact_match.gender,
+                            ki: exact_match.ki,
+                            max_ki: exact_match.max_ki || exact_match.ki,
+                            image_url: exact_match.image_url,
+                            description: `${exact_match.character_name} is a ${exact_match.race} character with a Ki level of ${exact_match.ki}.`,
+                            affiliation: null,
+                            planet: null
+                        },
+                        transformations: [] // We don't have transformation data from search
+                    };
+                    
+                    show_character_modal(character_data);
+                    
+                    // Show a notice that we used alternative method
+                    setTimeout(function() {
+                        var notice = `
+                            <div class="alert alert-info alert-dismissible fade show mt-2" role="alert">
+                                <i class="fa fa-info-circle mr-2"></i>
+                                <small>Character details loaded using search method (some details may be limited).</small>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        `;
+                        $('#characterModalBody').prepend(notice);
+                    }, 100);
+                    
+                } else {
+                    // Show similar characters if no exact match
+                    show_similar_characters_from_search(r.message, cleaned_name, original_response);
+                }
+            } else {
+                // If search also fails, show the original error with more info
+                show_detailed_error(cleaned_name, original_name, original_response);
+            }
+        },
+        error: function(search_error) {
+            console.error('Search fallback also failed:', search_error);
+            show_detailed_error(cleaned_name, original_name, original_response, search_error);
+        }
+    });
+}
+
+function show_similar_characters_from_search(search_results, cleaned_name, original_response) {
+    var similar_html = `
+        <div class="alert alert-warning">
+            <i class="fa fa-search mr-2"></i> 
+            <strong>No exact match for "${cleaned_name}", but found ${search_results.length} similar character(s):</strong>
+        </div>
+        <div class="list-group">
+    `;
+    
+    search_results.forEach(function(char) {
+        similar_html += `
+            <div class="list-group-item list-group-item-action" onclick="view_character_details('${char.character_name}')">
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">${char.character_name}</h6>
+                    <small>Ki: ${char.ki || 'Unknown'}</small>
+                </div>
+                <p class="mb-1">
+                    <span class="badge badge-primary">${char.race || 'Unknown'}</span>
+                    <span class="badge badge-info ml-2">${char.gender || 'Unknown'}</span>
+                </p>
+                <small class="text-muted">Click to view details</small>
+            </div>
+        `;
+    });
+    
+    similar_html += '</div>';
+    $('#characterModalBody').html(similar_html);
+    $('#characterModalLabel').text(`Similar to "${cleaned_name}"`);
+}
+
+function show_detailed_error(cleaned_name, original_name, original_response, search_error = null) {
+    $('#characterModalLabel').text('Character Not Found');
+    $('#characterModalBody').html(`
+        <div class="alert alert-warning">
+            <i class="fa fa-search mr-2"></i> 
+            <strong>Character "${cleaned_name}" not found</strong>
+            <hr>
+            <div class="mb-3">
+                <small class="text-muted">Debug Info:</small>
+                <div class="small bg-light p-2 rounded">
+                    <strong>Searched Name:</strong> "${cleaned_name}"<br>
+                    <strong>Original Name:</strong> "${original_name}"<br>
+                    <strong>Get Details Response:</strong> ${JSON.stringify(original_response?.message)}<br>
+                    ${search_error ? `<strong>Search Fallback Error:</strong> ${JSON.stringify(search_error)}<br>` : ''}
+                </div>
+            </div>
+            <p class="mb-2"><strong>Issue Identified:</strong> There's a backend inconsistency where the search method works but get_character_details doesn't.</p>
+            <p class="mb-2">This could be due to:</p>
+            <ul class="mb-2">
+                <li>Different database queries in the backend methods</li>
+                <li>Case sensitivity issues in get_character_details function</li>
+                <li>Missing character in the detailed view table</li>
+                <li>Backend function needs to be fixed</li>
+            </ul>
+            <div class="btn-group-sm">
+                <button class="btn btn-info btn-sm mr-2" onclick="test_character_search('${cleaned_name}')">
+                    <i class="fa fa-bug mr-1"></i> Test Again
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="show_all_characters_list()">
+                    <i class="fa fa-list mr-1"></i> Show All Characters
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+function test_character_search(character_name) {
+    $('#characterModalBody').html(`
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Testing character search for "${character_name}"...</p>
+        </div>
+    `);
+    
+    // Try multiple search methods
+    Promise.all([
+        // Test exact search
+        new Promise((resolve) => {
+            frappe.call({
+                method: 'dragon_ball_app.db_app.dashboard.dashboard.search_characters',
+                args: { search_term: character_name },
+                callback: (r) => resolve({method: 'search', result: r.message || []}),
+                error: (r) => resolve({method: 'search', error: r})
+            });
+        }),
+        // Test get_character_details with exact name
+        new Promise((resolve) => {
+            frappe.call({
+                method: 'dragon_ball_app.db_app.dashboard.dashboard.get_character_details',
+                args: { character_name: character_name },
+                callback: (r) => resolve({method: 'get_details', result: r.message}),
+                error: (r) => resolve({method: 'get_details', error: r})
+            });
+        })
+    ]).then(results => {
+        var test_html = `
+            <div class="alert alert-info">
+                <i class="fa fa-bug mr-2"></i>
+                <strong>Character Search Test Results for "${character_name}"</strong>
+            </div>
+        `;
+        
+        results.forEach((result, index) => {
+            var method_name = result.method === 'search' ? 'Search Method' : 'Get Details Method';
+            var success = !result.error && (result.result ? (Array.isArray(result.result) ? result.result.length > 0 : !!result.result.character) : false);
+            
+            test_html += `
+                <div class="card mb-2">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fa fa-${success ? 'check text-success' : 'times text-danger'} mr-2"></i>
+                            ${method_name}
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <small class="text-muted">Result:</small>
+                        <pre class="bg-light p-2 rounded small">${JSON.stringify(result, null, 2)}</pre>
+                        ${success && result.method === 'search' && result.result.length > 0 ? `
+                            <button class="btn btn-sm btn-success mt-2" onclick="view_character_details('${result.result[0].character_name}')">
+                                Try "${result.result[0].character_name}"
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        test_html += `
+            <div class="mt-3">
+                <button class="btn btn-primary btn-sm mr-2" onclick="show_all_characters_list()">
+                    <i class="fa fa-list mr-1"></i> Show All Characters
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="$('#characterModal').modal('hide')">
+                    <i class="fa fa-times mr-1"></i> Close
+                </button>
+            </div>
+        `;
+        
+        $('#characterModalBody').html(test_html);
+        $('#characterModalLabel').text(`Test Results: ${character_name}`);
+    });
+}
+
+function show_all_characters_list() {
+    $('#characterModalBody').html(`
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Loading all characters...</p>
+        </div>
+    `);
+    
+    frappe.call({
+        method: 'dragon_ball_app.db_app.dashboard.dashboard.get_dashboard_data',
+        callback: function(r) {
+            if (r.message) {
+                var all_characters = [
+                    ...(r.message.top_ki_characters || []),
+                    ...(r.message.recent_characters || [])
+                ];
+                
+                // Remove duplicates
+                var unique_chars = all_characters.filter((char, index, self) => 
+                    index === self.findIndex(c => c.character_name === char.character_name)
+                );
+                
+                var list_html = `
+                    <div class="alert alert-info">
+                        <i class="fa fa-list mr-2"></i>
+                        <strong>All Available Characters (${unique_chars.length})</strong>
+                    </div>
+                    <div class="list-group" style="max-height: 400px; overflow-y: auto;">
+                `;
+                
+                unique_chars.sort((a, b) => a.character_name.localeCompare(b.character_name));
+                
+                unique_chars.forEach(char => {
+                    list_html += `
+                        <div class="list-group-item list-group-item-action" onclick="view_character_details('${char.character_name.replace(/'/g, "\\'")}')">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">${char.character_name}</h6>
+                                <small>Ki: ${char.ki || 'Unknown'}</small>
+                            </div>
+                            <p class="mb-1">
+                                <span class="badge badge-primary">${char.race || 'Unknown'}</span>
+                                <span class="badge badge-info ml-2">${char.gender || 'Unknown'}</span>
+                            </p>
+                            <small class="text-muted">Click to view details</small>
+                        </div>
+                    `;
+                });
+                
+                list_html += '</div>';
+                $('#characterModalBody').html(list_html);
+                $('#characterModalLabel').text('All Characters');
+            }
+        },
+        error: function(r) {
+            $('#characterModalBody').html(`
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-triangle mr-2"></i>
+                    Error loading character list.
+                </div>
+            `);
+        }
+    });
+}
+
+function search_similar_characters(character_name) {
+    $('#characterModalBody').html(`
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Searching for characters similar to "${character_name}"...</p>
+        </div>
+    `);
+    
+    frappe.call({
+        method: 'dragon_ball_app.db_app.dashboard.dashboard.search_characters',
+        args: {
+            search_term: character_name
+        },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                var similar_html = `
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle mr-2"></i>
+                        <strong>Found ${r.message.length} similar character(s):</strong>
+                    </div>
+                    <div class="list-group">
+                `;
+                
+                r.message.forEach(function(char) {
+                    similar_html += `
+                        <div class="list-group-item list-group-item-action" onclick="view_character_details('${char.character_name}')">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">${char.character_name}</h6>
+                                <small>Ki: ${char.ki || 'Unknown'}</small>
+                            </div>
+                            <p class="mb-1">
+                                <span class="badge badge-primary">${char.race || 'Unknown'}</span>
+                                <span class="badge badge-info ml-2">${char.gender || 'Unknown'}</span>
+                            </p>
+                            <small class="text-muted">Click to view details</small>
+                        </div>
+                    `;
+                });
+                
+                similar_html += '</div>';
+                $('#characterModalBody').html(similar_html);
+                $('#characterModalLabel').text(`Similar to "${character_name}"`);
+            } else {
+                $('#characterModalBody').html(`
+                    <div class="alert alert-warning">
+                        <i class="fa fa-search mr-2"></i>
+                        <strong>No similar characters found</strong>
+                        <hr>
+                        <p class="mb-2">We couldn't find any characters similar to "${character_name}".</p>
+                        <p class="mb-3">Suggestions:</p>
+                        <ul class="mb-3">
+                            <li>Try a different spelling (e.g., "Frieza" instead of "Freezer")</li>
+                            <li>Try searching by race (e.g., "Saiyan", "Namekian")</li>
+                            <li>Make sure the characters are synced</li>
+                        </ul>
+                        <button class="btn btn-primary btn-sm mr-2" onclick="$('#character-search').focus(); $('#characterModal').modal('hide');">
+                            <i class="fa fa-search mr-1"></i> Try Search Box
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="sync_all_characters(); $('#characterModal').modal('hide');">
+                            <i class="fa fa-sync mr-1"></i> Sync Characters
+                        </button>
+                    </div>
+                `);
+            }
+        },
+        error: function(r) {
+            $('#characterModalBody').html(`
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-triangle mr-2"></i>
+                    Error searching for similar characters. Please try again.
+                </div>
+            `);
+        }
+    });
+}
+
+function show_character_modal(data) {
+    var char = data.character;
+    var transformations = data.transformations || [];
+    
+    var modal_html = `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="text-center">
+                    ${char.image_url ? 
+                        `<img src="${char.image_url}" class="img-fluid character-image rounded shadow-sm" style="max-height: 300px;">` : 
+                        `<div class="bg-light p-5 rounded text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                            <div>
+                                <i class="fa fa-user fa-5x text-muted mb-3"></i>
+                                <p class="text-muted">No Image Available</p>
+                            </div>
+                        </div>`
+                    }
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h4 class="mb-3">
+                    <i class="fa fa-user-circle mr-2"></i>${char.character_name}
+                </h4>
+                
+                <div class="character-info">
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Race:</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-primary race-badge">${char.race || 'Unknown'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Gender:</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-info gender-badge">${char.gender || 'Unknown'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Ki Level:</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-warning">${char.ki || 'Unknown'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Max Ki:</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-danger">${char.max_ki || 'Unknown'}</span>
+                        </div>
+                    </div>
+                    
+                    ${char.affiliation ? `
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Affiliation:</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-secondary">${char.affiliation}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${char.description ? `
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Description:</strong></div>
+                        <div class="col-sm-8">
+                            <p class="mb-0">${char.description}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${char.planet ? `
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Planet:</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-success">${char.planet}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+        
+        ${transformations.length > 0 ? `
+        <hr class="my-4">
+        <div class="row">
+            <div class="col-md-12">
+                <h5 class="mb-3">
+                    <i class="fa fa-magic mr-2"></i>Transformations (${transformations.length})
+                </h5>
+                <div class="transformation-list">
+                    ${transformations.map(t => `
+                        <div class="transformation-item card mb-2">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-sm-2">
+                                        ${t.image ? 
+                                            `<img src="${t.image}" class="transformation-image img-fluid rounded" style="max-height: 80px;">` : 
+                                            `<div class="transformation-image bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
+                                                <i class="fa fa-bolt text-muted"></i>
+                                            </div>`
+                                        }
+                                    </div>
+                                    <div class="col-sm-10">
+                                        <h6 class="mb-1">${t.transformation_name}</h6>
+                                        <div class="transformation-stats">
+                                            <span class="badge badge-warning mr-2">Ki: ${t.ki || 'Unknown'}</span>
+                                            ${t.description ? `<p class="text-muted mb-0 mt-1">${t.description}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+    
+    $('#characterModalLabel').html(`<i class="fa fa-user-circle mr-2"></i>${char.character_name}`);
+    $('#characterModalBody').html(modal_html);
+}
+</script>
+
+<style>
+.character-item {
+    cursor: pointer;
+}
+
+.character-item:hover {
+    background-color: #f8f9fa;
+}
+
+.character-card {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.character-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.character-image {
+    max-height: 200px;
+    object-fit: cover;
+}
+
+.race-badge {
+    background-color: #007bff;
+    color: white;
+}
+
+.gender-badge {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.transformation-item {
+    border: 1px solid #dee2e6;
+}
+
+.transformation-image {
+    max-height: 80px;
+    max-width: 80px;
+    object-fit: cover;
+}
+
+.character-info .row {
+    align-items: center;
+}
+
+.modal-xl {
+    max-width: 1140px;
+}
+
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.dashboard-title {
+    background: linear-gradient(45deg, #ff6b35, #f7931e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+}
+
+.sync-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.sync-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+.loading-spinner::after {
+    content: "";
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.search-input {
+    border-radius: 25px;
+    padding: 12px 20px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+</style>
+{% endblock %}

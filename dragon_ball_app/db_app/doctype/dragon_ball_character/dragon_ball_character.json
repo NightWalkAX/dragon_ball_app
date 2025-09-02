@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:character_name",
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "api_id",
+  "character_name",
+  "ki",
+  "max_ki",
+  "race",
+  "gender",
+  "description",
+  "image_url",
+  "transformations"
+ ],
+ "fields": [
+  {
+   "fieldname": "api_id",
+   "fieldtype": "Data",
+   "label": "API ID",
+   "unique": 1
+  },
+  {
+   "fieldname": "character_name",
+   "fieldtype": "Data",
+   "label": "Character Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ki",
+   "fieldtype": "Data",
+   "label": "Ki"
+  },
+  {
+   "fieldname": "max_ki",
+   "fieldtype": "Data",
+   "label": "Max Ki"
+  },
+  {
+   "fieldname": "race",
+   "fieldtype": "Data",
+   "label": "Race"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Select",
+   "label": "Gender",
+   "options": "Male\nFemale\nUnknown",
+   "length": 20
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "image_url",
+   "fieldtype": "Data",
+   "label": "Image URL"
+  },
+  {
+   "fieldname": "transformations",
+   "fieldtype": "Table",
+   "label": "Transformations",
+   "options": "Transformations"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "db_app",
+ "name": "Dragon Ball Character",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_views": 1
+}

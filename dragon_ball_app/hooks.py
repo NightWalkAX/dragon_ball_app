@@ -1,32 +1,19 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 app_name = "dragon_ball_app"
-app_title = "db-app"
+app_title = "Dragon Ball App"
 app_publisher = "JYMenDev"
 app_description = "An app for fetching data from Dragon Ball API"
 app_email = "jymendev@gmail.com"
-app_license = "mit"
-
-# Apps
-# ------------------
-
-# required_apps = []
-
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "dragon_ball_app",
-# 		"logo": "/assets/dragon_ball_app/logo.png",
-# 		"title": "db-app",
-# 		"route": "/dragon_ball_app",
-# 		"has_permission": "dragon_ball_app.api.permission.has_app_permission"
-# 	}
-# ]
+app_license = "MIT"
 
 # Includes in <head>
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/dragon_ball_app/css/dragon_ball_app.css"
-# app_include_js = "/assets/dragon_ball_app/js/dragon_ball_app.js"
+app_include_css = "/assets/dragon_ball_app/css/dragon_ball_app.css"
+app_include_js = "/assets/dragon_ball_app/js/dashboard.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/dragon_ball_app/css/dragon_ball_app.css"
@@ -48,11 +35,6 @@ app_license = "mit"
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
-# Svg Icons
-# ------------------
-# include app icons in desk
-# app_include_icons = "dragon_ball_app/public/icons.svg"
-
 # Home Pages
 # ----------
 
@@ -69,9 +51,6 @@ app_license = "mit"
 
 # automatically create page for each record of this doctype
 # website_generators = ["Web Page"]
-
-# automatically load and sync documents of this doctype from downstream apps
-# importable_doctypes = [doctype_1]
 
 # Jinja
 # ----------
@@ -94,22 +73,6 @@ app_license = "mit"
 # before_uninstall = "dragon_ball_app.uninstall.before_uninstall"
 # after_uninstall = "dragon_ball_app.uninstall.after_uninstall"
 
-# Integration Setup
-# ------------------
-# To set up dependencies/integrations with other apps
-# Name of the app being installed is passed as an argument
-
-# before_app_install = "dragon_ball_app.utils.before_app_install"
-# after_app_install = "dragon_ball_app.utils.after_app_install"
-
-# Integration Cleanup
-# -------------------
-# To clean up dependencies/integrations with other apps
-# Name of the app being uninstalled is passed as an argument
-
-# before_app_uninstall = "dragon_ball_app.utils.before_app_uninstall"
-# after_app_uninstall = "dragon_ball_app.utils.after_app_uninstall"
-
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config
@@ -126,6 +89,14 @@ app_license = "mit"
 #
 # has_permission = {
 # 	"Event": "frappe.desk.doctype.event.event.has_permission",
+# }
+
+# DocType Class
+# ---------------
+# Override standard doctype classes
+
+# override_doctype_class = {
+# 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
 # Document Events
@@ -230,10 +201,16 @@ app_license = "mit"
 # 	"dragon_ball_app.auth.validate"
 # ]
 
-# Automatically update python controller files with type annotations for this app.
-# export_python_type_annotations = True
+# Website Pages
+website_route_rules = [
+    {
+        "from_route": "/dragon-ball-dashboard", 
+        "to_route": "dragon-ball-dashboard"
+    },
+]
 
-# default_log_clearing_doctypes = {
-# 	"Logging DocType Name": 30  # days to retain logs
-# }
+# Custom Pages for Desk
+page_js = {
+    "dragon-ball-dashboard": "public/js/dashboard.js"
+}
 
