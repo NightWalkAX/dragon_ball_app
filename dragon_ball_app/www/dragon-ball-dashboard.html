@@ -2,53 +2,139 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block head_include %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'dragon-orange': '#FF6B35',
+                    'dragon-purple': '#764BA2',
+                    'dragon-gold': '#FFD700',
+                    'dragon-blue': '#4F46E5',
+                    'ki-energy': '#00FFD4'
+                },
+                animation: {
+                    'float': 'float 3s ease-in-out infinite',
+                    'pulse-slow': 'pulse 3s infinite',
+                    'bounce-slow': 'bounce 2s infinite',
+                    'spin-slow': 'spin 3s linear infinite'
+                }
+            }
+        }
+    }
+</script>
+<style>
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .glass-dark {
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+</style>
+{% endblock %}
+
 {% block page_content %}
-<div class="container-fluid">
-    <div class="dashboard-header">
-        <h1 class="dashboard-title">🐉 Dragon Ball Dashboard</h1>
-        <p>Explore and manage Dragon Ball characters and their transformations</p>
+<!-- Dragon Ball Universe Dashboard -->
+<div class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+    <!-- Animated Background Elements -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-r from-dragon-orange to-dragon-gold opacity-20 animate-pulse-slow"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-r from-dragon-blue to-dragon-purple opacity-20 animate-pulse-slow"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-r from-ki-energy to-dragon-gold opacity-10 animate-spin-slow"></div>
     </div>
 
-    <!-- Dashboard Controls -->
-    <div class="row mb-4">
-        <div class="col-md-12 text-center">
-            <button class="btn sync-button mr-3" onclick="sync_all_characters()">
-                <i class="fa fa-sync-alt"></i> Sync All Characters
-            </button>
-            <button class="btn sync-button" onclick="load_dashboard_data()">
-                <i class="fa fa-refresh"></i> Refresh Dashboard
-            </button>
+    <!-- Main Container -->
+    <div class="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+        
+        <!-- Hero Header -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-4 mb-6 animate-float">
+                <h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-dragon-orange via-dragon-gold to-dragon-purple bg-clip-text text-transparent">
+                    Universo Dragon Ball
+                </h1>
+            </div>
+            <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Explora los guerreros legendarios, sus increíbles transformaciones y los niveles de poder que sacuden el universo
+            </p>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button onclick="sync_all_characters()" class="group relative px-8 py-4 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
+                    <span class="flex items-center gap-3 justify-center">
+                        <svg class="w-5 h-5 group-hover:animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        Sincronizar Universo
+                    </span>
+                </button>
+                
+                <button onclick="load_dashboard_data()" class="group relative px-8 py-4 glass rounded-full text-white font-bold text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 min-w-[200px] border border-white/20">
+                    <span class="flex items-center gap-3 justify-center">
+                        <svg class="w-5 h-5 group-hover:animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd" />
+                        </svg>
+                        Actualizar Datos
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center" style="display: none;">
+            <div class="glass-dark rounded-3xl p-8 text-center max-w-sm mx-4">
+                <div class="animate-spin w-16 h-16 border-4 border-dragon-gold border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p class="text-white text-xl font-semibold">Cargando Universo...</p>
+                <p class="text-gray-300 mt-2">Recopilando datos de guerreros</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" class="space-y-8">
+            <!-- Content will be loaded dynamically -->
         </div>
     </div>
+</div>
 
-    <!-- Loading Spinner -->
-    <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
-
-    <!-- Dashboard Content -->
-    <div id="dashboard-content">
-        <!-- Content will be loaded dynamically -->
-    </div>
-
-    <!-- Character Details Modal -->
-    <div class="modal fade" id="characterModal" tabindex="-1" role="dialog" aria-labelledby="characterModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="characterModalLabel">Character Details</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+<!-- Character Details Modal - Modern Design -->
+<div class="modal fade" id="characterModal" tabindex="-1" role="dialog" aria-labelledby="characterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content bg-transparent border-0">
+            <div class="glass-dark rounded-3xl overflow-hidden">
+                <!-- Modal Header -->
+                <div class="relative bg-gradient-to-r from-dragon-purple to-dragon-blue p-6">
+                    <h5 class="modal-title text-2xl font-bold text-white flex items-center gap-3" id="characterModalLabel">
+                        <span class="text-3xl">⚡</span>
+                        Detalles del Personaje
+                    </h5>
+                    <button type="button" class="absolute top-6 right-6 text-white hover:text-dragon-gold transition-colors duration-200 text-2xl" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" id="characterModalBody">
-                    <div class="text-center">
-                        <div class="spinner-border" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                        <p>Loading character details...</p>
+                
+                <!-- Modal Body -->
+                <div class="modal-body p-6 text-white" id="characterModalBody">
+                    <div class="text-center py-12">
+                        <div class="animate-spin w-16 h-16 border-4 border-dragon-gold border-t-transparent rounded-full mx-auto mb-6"></div>
+                        <p class="text-xl font-semibold">Cargando detalles del personaje...</p>
+                        <p class="text-gray-300 mt-2">Accediendo a la base de datos del universo</p>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                
+                <!-- Modal Footer -->
+                <div class="modal-footer bg-black bg-opacity-20 border-t border-white border-opacity-10 p-4">
+                    <button type="button" class="px-6 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-full hover:from-gray-500 hover:to-gray-600 transition-all duration-200" data-dismiss="modal">
+                        Cerrar Portal
+                    </button>
                 </div>
             </div>
         </div>
@@ -63,13 +149,13 @@ frappe.ready(function() {
 });
 
 function show_loading() {
-    $('#loading-spinner').show();
-    $('#dashboard-content').hide();
+    $('#loading-spinner').css('display', 'flex').hide().fadeIn(300);
+    $('#dashboard-content').addClass('opacity-50 pointer-events-none');
 }
 
 function hide_loading() {
-    $('#loading-spinner').hide();
-    $('#dashboard-content').show();
+    $('#loading-spinner').fadeOut(300);
+    $('#dashboard-content').removeClass('opacity-50 pointer-events-none');
 }
 
 function sync_all_characters() {
@@ -81,7 +167,7 @@ function sync_all_characters() {
             hide_loading();
             if (r.message && r.message.status === 'success') {
                 frappe.show_alert({
-                    message: 'Successfully synced ' + r.message.synced_count + ' characters!',
+                    message: 'Se sincronizaron ' + r.message.synced_count + ' personajes exitosamente!',
                     indicator: 'green'
                 });
                 load_dashboard_data(); // Refresh dashboard
@@ -90,12 +176,16 @@ function sync_all_characters() {
         error: function(r) {
             hide_loading();
             frappe.show_alert({
-                message: 'Error syncing characters',
+                message: 'Error sincronizando personajes',
                 indicator: 'red'
             });
         }
     });
 }
+
+// Global variables to store original data
+var original_dashboard_data = null;
+var current_sort_type = null;
 
 function load_dashboard_data() {
     show_loading();
@@ -105,72 +195,411 @@ function load_dashboard_data() {
         callback: function(r) {
             hide_loading();
             if (r.message) {
+                original_dashboard_data = r.message; // Store original data
                 render_dashboard(r.message);
             }
         },
         error: function(r) {
             hide_loading();
-            $('#dashboard-content').html('<div class="alert alert-danger">Error loading dashboard data</div>');
+            $('#dashboard-content').html('<div class="alert alert-danger">Error cargando datos del dashboard</div>');
         }
     });
 }
 
+// Sorting functions
+function sort_characters(sort_type) {
+    if (!original_dashboard_data) {
+        frappe.show_alert({
+            message: 'Por favor carga los datos del dashboard primero',
+            indicator: 'orange'
+        });
+        return;
+    }
+    
+    current_sort_type = sort_type;
+    var sorted_data = JSON.parse(JSON.stringify(original_dashboard_data)); // Deep copy
+    
+    // Show loading state for sorting
+    show_sorting_feedback(sort_type);
+    
+    setTimeout(function() {
+        switch(sort_type) {
+            case 'alphabetical':
+                sort_alphabetically(sorted_data);
+                break;
+            case 'ki_level':
+                sort_by_ki_level(sorted_data);
+                break;
+            case 'transformations':
+                sort_by_transformations(sorted_data);
+                break;
+        }
+        
+        // Update the UI sections
+        update_sorted_sections(sorted_data, sort_type);
+        hide_sorting_feedback();
+    }, 300); // Small delay for smooth UX
+}
+
+function show_sorting_feedback(sort_type) {
+    var sort_names = {
+        'alphabetical': 'Orden Alfabético',
+        'ki_level': 'Nivel de Ki',
+        'transformations': 'Transformaciones'
+    };
+    
+    frappe.show_alert({
+        message: 'Organizando por ' + sort_names[sort_type] + '...',
+        indicator: 'blue'
+    });
+}
+
+function hide_sorting_feedback() {
+    // The alert will auto-hide, but we can show completion message
+    var sort_names = {
+        'alphabetical': 'orden alfabético',
+        'ki_level': 'nivel de Ki',
+        'transformations': 'cantidad de transformaciones'
+    };
+    
+    frappe.show_alert({
+        message: '¡Guerreros organizados por ' + sort_names[current_sort_type] + '!',
+        indicator: 'green'
+    });
+}
+
+function sort_alphabetically(data) {
+    if (data.top_ki_characters) {
+        data.top_ki_characters.sort(function(a, b) {
+            return a.character_name.localeCompare(b.character_name);
+        });
+    }
+    
+    if (data.recent_characters) {
+        data.recent_characters.sort(function(a, b) {
+            return a.character_name.localeCompare(b.character_name);
+        });
+    }
+}
+
+// Helper function to properly parse Ki values
+function parseKiValue(ki) {
+    if (!ki) return 0;
+    
+    // Convert to string and remove any whitespace
+    var ki_str = ki.toString().trim();
+    
+    // Remove commas and dots used as thousand separators
+    // Handle formats like: 60,000,000 or 60.000.000 or 530,000
+    ki_str = ki_str.replace(/[,\.]/g, '');
+    
+    // Convert to integer
+    var ki_value = parseInt(ki_str);
+    
+    // Return 0 if parsing failed
+    return isNaN(ki_value) ? 0 : ki_value;
+}
+
+function sort_by_ki_level(data) {
+    if (data.top_ki_characters) {
+        data.top_ki_characters.sort(function(a, b) {
+            var ki_a = parseKiValue(a.ki);
+            var ki_b = parseKiValue(b.ki);
+            return ki_b - ki_a; // Descending order
+        });
+    }
+    
+    if (data.recent_characters) {
+        data.recent_characters.sort(function(a, b) {
+            var ki_a = parseKiValue(a.ki);
+            var ki_b = parseKiValue(b.ki);
+            return ki_b - ki_a; // Descending order
+        });
+    }
+}
+
+function sort_by_transformations(data) {
+    // We need to get transformation data for sorting
+    frappe.call({
+        method: 'dragon_ball_app.db_app.dashboard.dashboard.get_characters_with_transformations',
+        callback: function(r) {
+            if (r.message) {
+                var transformation_data = r.message;
+                
+                // Create a map for quick lookup
+                var trans_count_map = {};
+                transformation_data.forEach(function(item) {
+                    trans_count_map[item.character_name] = item.transformation_count || 0;
+                });
+                
+                // Sort by transformation count
+                if (data.top_ki_characters) {
+                    data.top_ki_characters.sort(function(a, b) {
+                        var count_a = trans_count_map[a.character_name] || 0;
+                        var count_b = trans_count_map[b.character_name] || 0;
+                        return count_b - count_a; // Descending order
+                    });
+                }
+                
+                if (data.recent_characters) {
+                    data.recent_characters.sort(function(a, b) {
+                        var count_a = trans_count_map[a.character_name] || 0;
+                        var count_b = trans_count_map[b.character_name] || 0;
+                        return count_b - count_a; // Descending order
+                    });
+                }
+                
+                update_sorted_sections(data, 'transformations');
+                hide_sorting_feedback();
+            }
+        },
+        error: function(r) {
+            // Fallback sorting if transformation data is not available
+            frappe.show_alert({
+                message: 'Transformation data not available, sorting by name instead',
+                indicator: 'orange'
+            });
+            sort_alphabetically(data);
+            update_sorted_sections(data, 'transformations');
+            hide_sorting_feedback();
+        }
+    });
+}
+
+function update_sorted_sections(data, sort_type) {
+    // Update Elite Warriors section
+    $('#elite-warriors-list').html(render_top_characters(data.top_ki_characters));
+    
+    // Update Character Gallery section
+    $('#character-gallery').html(render_recent_characters(data.recent_characters));
+    
+    // Add sorting indicator
+    add_sort_indicator(sort_type);
+}
+
+function add_sort_indicator(sort_type) {
+    var sort_icons = {
+        'alphabetical': '🔤',
+        'ki_level': '⚡',
+        'transformations': '🔥'
+    };
+    
+    var sort_names = {
+        'alphabetical': 'Orden Alfabético',
+        'ki_level': 'Nivel de Ki (Mayor Primero)',
+        'transformations': 'Transformaciones (Más Primero)'
+    };
+    
+    var indicator_html = `
+        <div class="flex items-center justify-center gap-2 mt-4 p-3 bg-dragon-gold bg-opacity-20 text-dragon-gold rounded-xl">
+            <span class="text-xl">${sort_icons[sort_type]}</span>
+            <span class="font-semibold">Ordenado por: ${sort_names[sort_type]}</span>
+        </div>
+    `;
+    
+    // Remove existing indicators
+    $('.sort-indicator').remove();
+    
+    // Add indicator to both sections
+    $('#elite-warriors-list').after('<div class="sort-indicator">' + indicator_html + '</div>');
+    $('#character-gallery').after('<div class="sort-indicator">' + indicator_html + '</div>');
+}
+
+function reset_sorting() {
+    if (!original_dashboard_data) {
+        frappe.show_alert({
+            message: 'No hay datos para reiniciar',
+            indicator: 'orange'
+        });
+        return;
+    }
+    
+    current_sort_type = null;
+    
+    frappe.show_alert({
+        message: 'Reiniciando al orden original...',
+        indicator: 'blue'
+    });
+    
+    setTimeout(function() {
+        // Update sections with original data
+        $('#elite-warriors-list').html(render_top_characters(original_dashboard_data.top_ki_characters));
+        $('#character-gallery').html(render_recent_characters(original_dashboard_data.recent_characters));
+        
+        // Remove sort indicators
+        $('.sort-indicator').remove();
+        
+        frappe.show_alert({
+            message: '¡Guerreros restaurados al orden original!',
+            indicator: 'green'
+        });
+    }, 300);
+}
+
 function render_dashboard(data) {
+    // Calculate the highest Ki level correctly using the parseKiValue function
+    var highest_ki = 0;
+    var strongest_character = null;
+    
+    if (data.top_ki_characters && data.top_ki_characters.length > 0) {
+        data.top_ki_characters.forEach(function(char) {
+            var ki_value = parseKiValue(char.ki);
+            if (ki_value > highest_ki) {
+                highest_ki = ki_value;
+                strongest_character = char;
+            }
+        });
+    }
+    
     var dashboard_html = `
-        <div class="row">
-            <div class="col-md-3">
-                <div class="stats-card text-center">
-                    <h2 class="text-white">${data.total_characters}</h2>
-                    <p>Total Characters</p>
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <!-- Total Characters -->
+            <div class="glass rounded-2xl p-6 text-center hover:scale-105 transition-all duration-300 group">
+                <div class="text-4xl mb-3 group-hover:animate-bounce">👥</div>
+                <div class="text-3xl font-bold text-dragon-gold mb-2">${data.total_characters}</div>
+                <div class="text-gray-300 font-semibold">Guerreros del Universo</div>
+                <div class="mt-2 text-xs text-gray-400">Total registrados</div>
+            </div>
+            
+            <!-- Strongest Ki -->
+            <div class="glass rounded-2xl p-6 text-center hover:scale-105 transition-all duration-300 group">
+                <div class="text-4xl mb-3 group-hover:animate-pulse">👑</div>
+                <div class="text-3xl font-bold text-ki-energy mb-2">${highest_ki > 0 ? highest_ki.toLocaleString() : 'N/A'}</div>
+                <div class="text-gray-300 font-semibold">Nivel de Ki Más Alto</div>
+                <div class="mt-2 text-xs text-gray-400">${strongest_character ? strongest_character.character_name : 'Desconocido'}</div>
+            </div>
+            
+            <!-- Race Diversity -->
+            <div class="glass rounded-2xl p-6 text-center hover:scale-105 transition-all duration-300 group">
+                <div class="text-4xl mb-3 group-hover:animate-spin">🌟</div>
+                <div class="text-3xl font-bold text-dragon-purple mb-2">${data.race_distribution ? data.race_distribution.length : 0}</div>
+                <div class="text-gray-300 font-semibold">Razas Diferentes</div>
+                <div class="mt-2 text-xs text-gray-400">Diversidad del universo</div>
+            </div>
+            
+            <!-- Active Status -->
+            <div class="glass rounded-2xl p-6 text-center hover:scale-105 transition-all duration-300 group">
+                <div class="text-4xl mb-3 group-hover:animate-bounce">⚡</div>
+                <div class="text-3xl font-bold text-dragon-orange mb-2">Activo</div>
+                <div class="text-gray-300 font-semibold">Estado del Sistema</div>
+                <div class="mt-2 text-xs text-green-400">Todos los sistemas operativos</div>
+            </div>
+        </div>
+
+        <!-- Organization Controls & Search -->
+        <div class="mb-8">
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">📊</span>
+                        <h3 class="text-xl font-bold text-white">Controles de Organización y Búsqueda</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="sort_characters('alphabetical')" 
+                                class="px-4 py-2 bg-dragon-blue bg-opacity-30 text-dragon-blue rounded-full hover:bg-opacity-50 transition-all duration-300 font-medium border border-dragon-blue border-opacity-30 hover:border-opacity-70">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h4a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                                </svg>
+                                Orden A-Z
+                            </span>
+                        </button>
+                        
+                        <button onclick="sort_characters('ki_level')" 
+                                class="px-4 py-2 bg-ki-energy bg-opacity-30 text-ki-energy rounded-full hover:bg-opacity-50 transition-all duration-300 font-medium border border-ki-energy border-opacity-30 hover:border-opacity-70">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                                </svg>
+                                Nivel de Ki
+                            </span>
+                        </button>
+                        
+                        <button onclick="sort_characters('transformations')" 
+                                class="px-4 py-2 bg-dragon-purple bg-opacity-30 text-dragon-purple rounded-full hover:bg-opacity-50 transition-all duration-300 font-medium border border-dragon-purple border-opacity-30 hover:border-opacity-70">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                                </svg>
+                                Transformaciones
+                            </span>
+                        </button>
+                        
+                        <button onclick="reset_sorting()" 
+                                class="px-4 py-2 bg-gray-600 bg-opacity-30 text-gray-300 rounded-full hover:bg-opacity-50 transition-all duration-300 font-medium border border-gray-500 border-opacity-30 hover:border-opacity-70">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                </svg>
+                                Reiniciar
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Search Section -->
+                <div class="border-t border-white border-opacity-10 pt-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-2xl">🔍</span>
+                        <h4 class="text-lg font-bold text-white">Buscar Guerreros</h4>
+                    </div>
+                    <div class="relative max-w-2xl">
+                        <input type="text" id="character-search" 
+                               class="w-full px-6 py-4 bg-black bg-opacity-30 border border-white border-opacity-20 rounded-full text-white placeholder-gray-400 text-lg focus:outline-none focus:border-dragon-gold focus:ring-2 focus:ring-dragon-gold focus:ring-opacity-50 transition-all duration-300" 
+                               placeholder="Busca tus guerreros favoritos, razas, o niveles de poder...">
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387zM8 14A6 6 0 108 2a6 6 0 000 12z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Results -->
+                    <div id="search-results" class="mt-4"></div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Characters by Race</h5>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div id="main-content-sections" class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Race Distribution -->
+            <div class="xl:col-span-1">
+                <div class="glass rounded-2xl p-6 h-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-2xl">🌍</span>
+                        <h3 class="text-2xl font-bold text-white">Razas del Universo</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="space-y-3">
                         ${render_race_distribution(data.race_distribution)}
                     </div>
                 </div>
             </div>
-            <div class="col-md-5">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Top Ki Characters</h5>
+            
+            <!-- Right Column: Top Warriors -->
+            <div class="xl:col-span-2">
+                <div class="glass rounded-2xl p-6 h-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-2xl">🥇</span>
+                        <h3 class="text-2xl font-bold text-white">Guerreros Elite</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="space-y-4" id="elite-warriors-list">
                         ${render_top_characters(data.top_ki_characters)}
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Recent Characters</h5>
-                    </div>
-                    <div class="card-body">
-                        ${render_recent_characters(data.recent_characters)}
-                    </div>
+        <!-- Character Gallery -->
+        <div id="character-gallery-section" class="mt-8">
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-2xl">🎭</span>
+                    <h3 class="text-2xl font-bold text-white">Galería de Personajes</h3>
                 </div>
-            </div>
-        </div>
-        
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Search Characters</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="search-container">
-                            <input type="text" id="character-search" class="form-control search-input" placeholder="Search by name or race...">
-                        </div>
-                        <div id="search-results"></div>
-                    </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="character-gallery">
+                    ${render_recent_characters(data.recent_characters)}
                 </div>
             </div>
         </div>
@@ -181,75 +610,184 @@ function render_dashboard(data) {
 
 function render_race_distribution(race_data) {
     if (!race_data || race_data.length === 0) {
-        return '<p>No race data available</p>';
+        return '<div class="text-center text-gray-400 py-8"><div class="text-4xl mb-2">🌌</div><p>No hay datos de razas disponibles</p></div>';
     }
     
-    var html = '<div class="list-group">';
-    race_data.forEach(function(item) {
-        html += `<div class="list-group-item d-flex justify-content-between align-items-center">
-            ${item.race}
-            <span class="race-badge">${item.count}</span>
-        </div>`;
+    var html = '';
+    race_data.forEach(function(item, index) {
+        var colors = ['dragon-orange', 'dragon-purple', 'dragon-gold', 'dragon-blue', 'ki-energy'];
+        var color = colors[index % colors.length];
+        
+        html += `
+            <div class="flex items-center justify-between p-3 bg-black bg-opacity-20 rounded-xl hover:bg-opacity-30 transition-all duration-300 group">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-${color} animate-pulse"></div>
+                    <span class="text-white font-medium group-hover:text-${color} transition-colors">${item.race}</span>
+                </div>
+                <span class="px-3 py-1 bg-${color} bg-opacity-20 text-${color} rounded-full text-sm font-bold">${item.count}</span>
+            </div>
+        `;
     });
-    html += '</div>';
+    
     return html;
 }
 
 function render_top_characters(characters) {
     if (!characters || characters.length === 0) {
-        return '<p>No character data available</p>';
+        return '<div class="text-center text-gray-400 py-8"><div class="text-4xl mb-2">⚡</div><p>No se encontraron guerreros elite</p></div>';
     }
     
-    var html = '<div class="list-group">';
-    characters.forEach(function(char) {
-        // Ensure character_name is properly escaped and cleaned
+    var html = '';
+    characters.forEach(function(char, index) {
         var clean_name = (char.character_name || '').replace(/'/g, "\\'");
-        html += `<div class="list-group-item character-item" onclick="view_character_details('${clean_name}')">
-            <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">${char.character_name}</h6>
-                <small>Ki: ${char.ki}</small>
+        
+        // Format Ki value with commas - ensure we parse the actual number correctly
+        var ki_parsed = parseKiValue(char.ki);
+        var ki_formatted = ki_parsed > 0 ? ki_parsed.toLocaleString() : 'Desconocido';
+        
+        var max_ki_parsed = parseKiValue(char.max_ki || char.ki);
+        var max_ki_formatted = max_ki_parsed > 0 ? max_ki_parsed.toLocaleString() : ki_formatted;
+        
+        // Create character silhouette
+        var silhouette_html = '';
+        if (char.image_url) {
+            silhouette_html = `
+                <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-dragon-purple to-dragon-blue flex items-center justify-center relative p-1">
+                    <img src="${char.image_url}" 
+                         class="w-full h-full object-contain rounded-full" 
+                         alt="${char.character_name}" 
+                         style="filter: brightness(0) invert(1) opacity(0.8); max-width: 100%; max-height: 100%;">
+                </div>
+            `;
+        } else {
+            silhouette_html = `
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-dragon-purple to-dragon-blue flex items-center justify-center text-white font-bold text-lg">
+                    ${char.character_name.charAt(0)}
+                </div>
+            `;
+        }
+        
+        html += `
+            <div class="flex items-center gap-4 p-4 bg-black bg-opacity-20 rounded-xl hover:bg-opacity-30 transition-all duration-300 cursor-pointer group hover:scale-105" 
+                 onclick="view_character_details('${clean_name}')">
+                ${silhouette_html}
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-lg font-bold text-white group-hover:text-dragon-gold transition-colors">${char.character_name}</h4>
+                        <span class="px-3 py-1 bg-ki-energy bg-opacity-20 text-ki-energy rounded-full text-sm font-bold">⚡ ${ki_formatted}</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-1 bg-dragon-purple bg-opacity-30 text-dragon-purple rounded-lg text-xs font-medium">${char.race}</span>
+                        <span class="px-2 py-1 bg-dragon-orange bg-opacity-30 text-dragon-orange rounded-lg text-xs font-medium">Máx: ${max_ki_formatted}</span>
+                        ${char.transformation_count ? `<span class="px-2 py-1 bg-dragon-gold bg-opacity-30 text-dragon-gold rounded-lg text-xs font-medium">🔥 ${char.transformation_count} formas</span>` : ''}
+                    </div>
+                </div>
+                <div class="text-gray-400 group-hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M3.293 15.707a1 1 0 010-1.414L7.586 10 3.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </div>
             </div>
-            <p class="mb-1">Race: ${char.race}</p>
-            <small>Max Ki: ${char.max_ki}</small>
-        </div>`;
+        `;
     });
-    html += '</div>';
+    
     return html;
 }
 
 function render_recent_characters(characters) {
     if (!characters || characters.length === 0) {
-        return '<p>No recent characters</p>';
+        return '<div class="col-span-full text-center text-gray-400 py-12"><div class="text-6xl mb-4">🌟</div><p class="text-xl">No hay personajes en la galería aún</p><p class="text-sm mt-2">Sincroniza el universo para poblar</p></div>';
     }
     
-    var html = '<div class="row">';
+    var html = '';
     characters.forEach(function(char) {
-        // Ensure character_name is properly escaped and cleaned
         var clean_name = (char.character_name || '').replace(/'/g, "\\'");
-        html += `<div class="col-sm-6 col-lg-4 mb-3">
-            <div class="character-card card" onclick="view_character_details('${clean_name}')">
-                ${char.image_url ? `<img src="${char.image_url}" class="character-image card-img-top">` : ''}
-                <div class="card-body">
-                    <h6 class="card-title">${char.character_name}</h6>
-                    <p class="card-text">
-                        <span class="race-badge">${char.race || 'Unknown'}</span>
-                        <span class="gender-badge ml-2">${char.gender || 'Unknown'}</span>
-                    </p>
+        var genderColors = {
+            'Male': 'blue-500',
+            'Female': 'pink-500',
+            'Unknown': 'gray-500'
+        };
+        var genderColor = genderColors[char.gender] || genderColors['Unknown'];
+        
+        // Format Ki value with commas - ensure we parse the actual number correctly
+        var ki_parsed = parseKiValue(char.ki);
+        var ki_formatted = ki_parsed > 0 ? ki_parsed.toLocaleString() : '?';
+        
+        html += `
+            <div class="group cursor-pointer" onclick="view_character_details('${clean_name}')">
+                <div class="glass rounded-2xl overflow-hidden hover:scale-105 transition-all duration-300 h-full">
+                    <div class="relative">
+                        ${char.image_url ? 
+                            `<img src="${char.image_url}" class="w-full h-32 object-contain object-top group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br from-dragon-purple to-dragon-blue" alt="${char.character_name}" style="max-height: 128px;">
+                             <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>` : 
+                            `<div class="w-full h-32 bg-gradient-to-br from-dragon-purple to-dragon-blue flex items-center justify-center group-hover:from-dragon-orange group-hover:to-dragon-gold transition-all duration-300">
+                                <div class="text-4xl animate-pulse">👤</div>
+                             </div>`
+                        }
+                        <div class="absolute top-3 right-3">
+                            <div class="px-3 py-1 bg-black bg-opacity-60 backdrop-blur-sm rounded-full text-xs text-white font-bold border border-ki-energy border-opacity-50">
+                                ⚡ ${ki_formatted}
+                            </div>
+                        </div>
+                        ${char.transformation_count ? `
+                        <div class="absolute top-3 left-3">
+                            <div class="px-2 py-1 bg-dragon-gold bg-opacity-80 text-black rounded-full text-xs font-bold">
+                                🔥 ${char.transformation_count}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold text-white mb-2 group-hover:text-dragon-gold transition-colors truncate">${char.character_name}</h3>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2 py-1 bg-dragon-purple bg-opacity-30 text-dragon-purple rounded-lg text-xs font-medium">
+                                ${char.race || 'Desconocido'}
+                            </span>
+                            <span class="px-2 py-1 bg-${genderColor} bg-opacity-30 text-${genderColor} rounded-lg text-xs font-medium">
+                                ${char.gender || 'Desconocido'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>`;
+        `;
     });
-    html += '</div>';
+    
     return html;
 }
 
 function setup_search() {
     $(document).on('input', '#character-search', function() {
-        var search_term = $(this).val();
+        var search_term = $(this).val().trim();
+        
         if (search_term.length > 2) {
+            // Hide main sections when searching
+            $('#main-content-sections').slideUp(300);
+            $('#character-gallery-section').slideUp(300);
+            $('.sort-indicator').hide();
+            
             search_characters(search_term);
-        } else {
+        } else if (search_term.length === 0) {
+            // Show main sections when search is cleared
             $('#search-results').html('');
+            $('#main-content-sections').slideDown(300);
+            $('#character-gallery-section').slideDown(300);
+            $('.sort-indicator').show();
+        } else {
+            // Clear search results but don't show main sections yet
+            $('#search-results').html('');
+        }
+    });
+    
+    // Handle search input clearing with escape key
+    $(document).on('keydown', '#character-search', function(e) {
+        if (e.key === 'Escape') {
+            $(this).val('');
+            $('#search-results').html('');
+            $('#main-content-sections').slideDown(300);
+            $('#character-gallery-section').slideDown(300);
+            $('.sort-indicator').show();
         }
     });
 }
@@ -270,26 +808,74 @@ function search_characters(search_term) {
 
 function render_search_results(characters) {
     if (!characters || characters.length === 0) {
-        $('#search-results').html('<p>No characters found</p>');
+        $('#search-results').html(`
+            <div class="text-center text-gray-400 py-8 glass rounded-xl">
+                <div class="text-4xl mb-3">🔍</div>
+                <p class="text-lg">No se encontraron guerreros que coincidan con tu búsqueda</p>
+                <p class="text-sm mt-2">Intenta buscar nombres, razas, o niveles de poder</p>
+                <button onclick="$('#character-search').val('').trigger('input')" class="mt-4 px-4 py-2 bg-dragon-gold bg-opacity-20 text-dragon-gold rounded-full hover:bg-opacity-40 transition-all duration-300">
+                    Limpiar Búsqueda
+                </button>
+            </div>
+        `);
         return;
     }
     
-    var html = '<div class="list-group">';
-    characters.forEach(function(char) {
-        // Ensure character_name is properly escaped and cleaned
-        var clean_name = (char.character_name || '').replace(/'/g, "\\'");
-        html += `<div class="list-group-item list-group-item-action" onclick="view_character_details('${clean_name}')">
-            <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">${char.character_name}</h6>
-                <small>Ki: ${char.ki || 'Unknown'}</small>
+    var html = `
+        <div class="glass rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-white font-bold">Resultados de Búsqueda (${characters.length})</h4>
+                <button onclick="$('#character-search').val('').trigger('input')" class="px-3 py-1 bg-gray-600 bg-opacity-30 text-gray-300 rounded-full hover:bg-opacity-50 transition-all duration-300 text-sm">
+                    Limpiar Búsqueda
+                </button>
             </div>
-            <p class="mb-1">
-                <span class="race-badge">${char.race || 'Unknown'}</span>
-                <span class="gender-badge ml-2">${char.gender || 'Unknown'}</span>
-            </p>
-        </div>`;
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    `;
+    
+    characters.forEach(function(char) {
+        var clean_name = (char.character_name || '').replace(/'/g, "\\'");
+        var genderColors = {
+            'Male': 'blue-500',
+            'Female': 'pink-500',
+            'Unknown': 'gray-500'
+        };
+        var genderColor = genderColors[char.gender] || genderColors['Unknown'];
+        
+        // Format Ki value with commas - ensure we parse the actual number correctly
+        var ki_parsed = parseKiValue(char.ki);
+        var ki_formatted = ki_parsed > 0 ? ki_parsed.toLocaleString() : '?';
+        
+        html += `
+            <div class="flex items-center gap-4 p-4 bg-black bg-opacity-20 rounded-xl hover:bg-opacity-30 transition-all duration-300 cursor-pointer group hover:scale-105" 
+                 onclick="view_character_details('${clean_name}')">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-dragon-purple to-dragon-blue flex items-center justify-center text-xl font-bold text-white group-hover:from-dragon-orange group-hover:to-dragon-gold transition-all duration-300">
+                    ${char.character_name.charAt(0)}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="text-white font-semibold group-hover:text-dragon-gold transition-colors truncate">${char.character_name}</h4>
+                        <span class="px-2 py-1 bg-ki-energy bg-opacity-20 text-ki-energy rounded-lg text-xs font-bold flex-shrink-0">⚡ ${ki_formatted}</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-1 bg-dragon-purple bg-opacity-30 text-dragon-purple rounded-lg text-xs font-medium">
+                            ${char.race || 'Desconocido'}
+                        </span>
+                        <span class="px-2 py-1 bg-${genderColor} bg-opacity-30 text-${genderColor} rounded-lg text-xs font-medium">
+                            ${char.gender || 'Desconocido'}
+                        </span>
+                        ${char.transformation_count ? `<span class="px-2 py-1 bg-dragon-gold bg-opacity-30 text-dragon-gold rounded-lg text-xs font-medium">🔥 ${char.transformation_count}</span>` : ''}
+                    </div>
+                </div>
+                <div class="text-gray-400 group-hover:text-white transition-colors flex-shrink-0">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+        `;
     });
-    html += '</div>';
+    
+    html += '</div></div>';
     
     $('#search-results').html(html);
 }
@@ -298,7 +884,7 @@ function view_character_details(character_name) {
     // Clean and validate character name
     if (!character_name || character_name.trim() === '') {
         frappe.show_alert({
-            message: 'Invalid character name',
+            message: 'Nombre de personaje inválido',
             indicator: 'red'
         });
         return;
@@ -308,13 +894,13 @@ function view_character_details(character_name) {
     var cleaned_name = character_name.trim();
     
     // Show modal immediately with loading state
-    $('#characterModalLabel').text('Loading...');
+    $('#characterModalLabel').text('Cargando...');
     $('#characterModalBody').html(`
         <div class="text-center">
             <div class="spinner-border" role="status">
-                <span class="sr-only">Loading...</span>
+                <span class="sr-only">Cargando...</span>
             </div>
-            <p class="mt-2">Loading details for "${cleaned_name}"...</p>
+            <p class="mt-2">Cargando detalles para "${cleaned_name}"...</p>
         </div>
     `);
     $('#characterModal').modal('show');
@@ -720,241 +1306,258 @@ function show_character_modal(data) {
     var transformations = data.transformations || [];
     
     var modal_html = `
-        <div class="row">
-            <div class="col-md-4">
-                <div class="text-center">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Character Image -->
+            <div class="lg:col-span-2">
+                <div class="sticky top-6">
                     ${char.image_url ? 
-                        `<img src="${char.image_url}" class="img-fluid character-image rounded shadow-sm" style="max-height: 300px;">` : 
-                        `<div class="bg-light p-5 rounded text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                            <div>
-                                <i class="fa fa-user fa-5x text-muted mb-3"></i>
-                                <p class="text-muted">No Image Available</p>
+                        `<div class="relative group">
+                            <img src="${char.image_url}" class="w-full rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300 bg-gradient-to-br from-dragon-purple via-dragon-blue to-dragon-gold" style="max-height: 300px; object-fit: contain;">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-60 rounded-2xl transition-opacity duration-300"></div>
+                        </div>` : 
+                        `<div class="w-full h-72 bg-gradient-to-br from-dragon-purple via-dragon-blue to-dragon-gold rounded-2xl flex items-center justify-center shadow-2xl">
+                            <div class="text-center">
+                                <div class="text-6xl mb-4 animate-pulse">👤</div>
+                                <p class="text-white text-lg font-semibold">No Image Available</p>
+                                <p class="text-gray-300 mt-2">Warrior Portrait Missing</p>
                             </div>
                         </div>`
                     }
                 </div>
             </div>
-            <div class="col-md-8">
-                <h4 class="mb-3">
-                    <i class="fa fa-user-circle mr-2"></i>${char.character_name}
-                </h4>
-                
-                <div class="character-info">
-                    <div class="row mb-2">
-                        <div class="col-sm-4"><strong>Race:</strong></div>
-                        <div class="col-sm-8">
-                            <span class="badge badge-primary race-badge">${char.race || 'Unknown'}</span>
+            
+            <!-- Character Details -->
+            <div class="lg:col-span-3">
+                <div class="space-y-6">
+                    <!-- Character Header -->
+                    <div class="text-center lg:text-left">
+                        <h2 class="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-dragon-gold via-dragon-orange to-dragon-purple bg-clip-text text-transparent mb-3">
+                            ${char.character_name}
+                        </h2>
+                        <div class="flex flex-wrap justify-center lg:justify-start gap-3 mb-6">
+                            <span class="px-4 py-2 bg-dragon-purple bg-opacity-30 text-dragon-purple rounded-full font-bold text-sm border border-dragon-purple border-opacity-50">
+                                🌟 ${char.race || 'Unknown Race'}
+                            </span>
+                            <span class="px-4 py-2 bg-dragon-blue bg-opacity-30 text-dragon-blue rounded-full font-bold text-sm border border-dragon-blue border-opacity-50">
+                                ⚥ ${char.gender || 'Unknown'}
+                            </span>
                         </div>
                     </div>
-                    
-                    <div class="row mb-2">
-                        <div class="col-sm-4"><strong>Gender:</strong></div>
-                        <div class="col-sm-8">
-                            <span class="badge badge-info gender-badge">${char.gender || 'Unknown'}</span>
+
+                    <!-- Power Stats -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="glass-dark rounded-xl p-4 text-center">
+                            <div class="text-3xl mb-2">⚡</div>
+                            <div class="text-2xl font-bold text-ki-energy">${char.ki || 'Unknown'}</div>
+                            <div class="text-gray-300 text-sm">Current Ki Level</div>
+                        </div>
+                        
+                        <div class="glass-dark rounded-xl p-4 text-center">
+                            <div class="text-3xl mb-2">💥</div>
+                            <div class="text-2xl font-bold text-dragon-gold">${char.max_ki || char.ki || 'Unknown'}</div>
+                            <div class="text-gray-300 text-sm">Maximum Ki Level</div>
                         </div>
                     </div>
-                    
-                    <div class="row mb-2">
-                        <div class="col-sm-4"><strong>Ki Level:</strong></div>
-                        <div class="col-sm-8">
-                            <span class="badge badge-warning">${char.ki || 'Unknown'}</span>
+
+                    <!-- Additional Info -->
+                    <div class="space-y-4">
+                        ${char.affiliation ? `
+                        <div class="flex items-center gap-3 p-4 bg-black bg-opacity-30 rounded-xl">
+                            <span class="text-2xl">🏛️</span>
+                            <div>
+                                <div class="text-gray-300 text-sm">Affiliation</div>
+                                <div class="text-white font-semibold">${char.affiliation}</div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="row mb-2">
-                        <div class="col-sm-4"><strong>Max Ki:</strong></div>
-                        <div class="col-sm-8">
-                            <span class="badge badge-danger">${char.max_ki || 'Unknown'}</span>
+                        ` : ''}
+                        
+                        ${char.planet ? `
+                        <div class="flex items-center gap-3 p-4 bg-black bg-opacity-30 rounded-xl">
+                            <span class="text-2xl">🪐</span>
+                            <div>
+                                <div class="text-gray-300 text-sm">Home Planet</div>
+                                <div class="text-white font-semibold">${char.planet}</div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    ${char.affiliation ? `
-                    <div class="row mb-2">
-                        <div class="col-sm-4"><strong>Affiliation:</strong></div>
-                        <div class="col-sm-8">
-                            <span class="badge badge-secondary">${char.affiliation}</span>
+                        ` : ''}
+                        
+                        ${char.description ? `
+                        <div class="p-4 bg-black bg-opacity-30 rounded-xl">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-2xl">📖</span>
+                                <div class="text-gray-300 text-sm">About</div>
+                            </div>
+                            <p class="text-white leading-relaxed">${char.description}</p>
                         </div>
+                        ` : ''}
                     </div>
-                    ` : ''}
-                    
-                    ${char.description ? `
-                    <div class="row mb-2">
-                        <div class="col-sm-4"><strong>Description:</strong></div>
-                        <div class="col-sm-8">
-                            <p class="mb-0">${char.description}</p>
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    ${char.planet ? `
-                    <div class="row mb-2">
-                        <div class="col-sm-4"><strong>Planet:</strong></div>
-                        <div class="col-sm-8">
-                            <span class="badge badge-success">${char.planet}</span>
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
             </div>
         </div>
         
         ${transformations.length > 0 ? `
-        <hr class="my-4">
-        <div class="row">
-            <div class="col-md-12">
-                <h5 class="mb-3">
-                    <i class="fa fa-magic mr-2"></i>Transformations (${transformations.length})
-                </h5>
-                <div class="transformation-list">
-                    ${transformations.map(t => `
-                        <div class="transformation-item card mb-2">
-                            <div class="card-body">
-                                <div class="row align-items-center">
-                                    <div class="col-sm-2">
-                                        ${t.image ? 
-                                            `<img src="${t.image}" class="transformation-image img-fluid rounded" style="max-height: 80px;">` : 
-                                            `<div class="transformation-image bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
-                                                <i class="fa fa-bolt text-muted"></i>
-                                            </div>`
-                                        }
-                                    </div>
-                                    <div class="col-sm-10">
-                                        <h6 class="mb-1">${t.transformation_name}</h6>
-                                        <div class="transformation-stats">
-                                            <span class="badge badge-warning mr-2">Ki: ${t.ki || 'Unknown'}</span>
-                                            ${t.description ? `<p class="text-muted mb-0 mt-1">${t.description}</p>` : ''}
-                                        </div>
-                                    </div>
+        <div class="mt-10 pt-8 border-t border-white border-opacity-20">
+            <div class="text-center mb-8">
+                <h3 class="text-3xl font-bold text-white flex items-center justify-center gap-3">
+                    <span class="text-4xl">🔥</span>
+                    Transformations (${transformations.length})
+                </h3>
+                <p class="text-gray-300 mt-2">Unleash the hidden power within</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${transformations.map((t, index) => `
+                    <div class="glass-dark rounded-2xl overflow-hidden hover:scale-105 transition-all duration-300 group">
+                        <div class="relative">
+                            ${t.image ? 
+                                `<img src="${t.image}" class="w-full h-32 object-contain object-top group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br from-dragon-orange to-dragon-gold" style="max-height: 128px;">
+                                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>` : 
+                                `<div class="w-full h-32 bg-gradient-to-br from-dragon-orange to-dragon-gold flex items-center justify-center">
+                                    <div class="text-4xl animate-pulse">🔥</div>
+                                 </div>`
+                            }
+                            <div class="absolute top-3 right-3">
+                                <div class="px-3 py-1 bg-ki-energy bg-opacity-90 text-black rounded-full text-xs font-bold">
+                                    ⚡ ${t.ki || 'Unknown'}
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
-                </div>
+                        
+                        <div class="p-6">
+                            <h4 class="text-xl font-bold text-white mb-3 group-hover:text-dragon-gold transition-colors">
+                                ${t.transformation_name}
+                            </h4>
+                            ${t.description ? `
+                                <p class="text-gray-300 text-sm leading-relaxed">${t.description}</p>
+                            ` : `
+                                <p class="text-gray-400 text-sm italic">No description available for this transformation.</p>
+                            `}
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         </div>
         ` : ''}
     `;
     
-    $('#characterModalLabel').html(`<i class="fa fa-user-circle mr-2"></i>${char.character_name}`);
+    $('#characterModalLabel').html(`
+        <span class="text-3xl">⚡</span>
+        <span class="bg-gradient-to-r from-dragon-gold to-dragon-orange bg-clip-text text-transparent">
+            ${char.character_name}
+        </span>
+    `);
     $('#characterModalBody').html(modal_html);
 }
 </script>
 
+<!-- Enhanced Styles for Dragon Ball Universe Dashboard -->
 <style>
-.character-item {
-    cursor: pointer;
+/* Custom animations and effects */
+.animate-glow {
+    animation: glow 2s infinite alternate;
 }
 
-.character-item:hover {
-    background-color: #f8f9fa;
+@keyframes glow {
+    from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+    to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4); }
 }
 
-.character-card {
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
 }
 
-.character-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
 }
 
-.character-image {
-    max-height: 200px;
-    object-fit: cover;
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF6B35, #764BA2);
+    border-radius: 4px;
 }
 
-.race-badge {
-    background-color: #007bff;
-    color: white;
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #FFD700, #FF6B35);
 }
 
-.gender-badge {
-    background-color: #17a2b8;
-    color: white;
+/* Enhanced glass effect */
+.glass-enhanced {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.transformation-item {
-    border: 1px solid #dee2e6;
+/* Character card hover effects */
+.character-hover:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-.transformation-image {
-    max-height: 80px;
-    max-width: 80px;
-    object-fit: cover;
+/* Ki energy effect */
+.ki-pulse {
+    position: relative;
+    overflow: hidden;
 }
 
-.character-info .row {
-    align-items: center;
+.ki-pulse::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(0, 255, 212, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: ki-wave 3s linear infinite;
 }
 
-.modal-xl {
-    max-width: 1140px;
+@keyframes ki-wave {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
-.stats-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+/* Modal enhancements */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: blur(5px);
 }
 
-.dashboard-title {
-    background: linear-gradient(45deg, #ff6b35, #f7931e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: bold;
-}
-
-.sync-button {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    padding: 10px 20px;
+/* Button animations */
+.btn-dragon {
+    position: relative;
+    overflow: hidden;
     transition: all 0.3s ease;
 }
 
-.sync-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    color: white;
-}
-
-.loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 200px;
-}
-
-.loading-spinner::after {
-    content: "";
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+.btn-dragon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.btn-dragon:hover::before {
+    width: 300%;
+    height: 300%;
 }
 
-.search-input {
-    border-radius: 25px;
-    padding: 12px 20px;
-    border: 2px solid #e9ecef;
-    transition: border-color 0.3s ease;
+/* Responsive text scaling */
+@media (max-width: 768px) {
+    .text-responsive-xl { font-size: 2.5rem; }
+    .text-responsive-lg { font-size: 1.8rem; }
 }
 
-.search-input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+@media (max-width: 640px) {
+    .text-responsive-xl { font-size: 2rem; }
+    .text-responsive-lg { font-size: 1.5rem; }
 }
 </style>
 {% endblock %}

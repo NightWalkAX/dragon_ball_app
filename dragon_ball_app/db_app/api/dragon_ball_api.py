@@ -10,10 +10,16 @@ from frappe import _
 def sync_all_characters():
     """Sync all characters from Dragon Ball API"""
     try:
+        # Count existing characters in the database
+        existing_count = frappe.db.count("Dragon Ball Character")
+        
         # API endpoint for Dragon Ball characters
         api_url = "https://dragonball-api.com/api/characters"
         
-        print("🚀 STARTING MASS SYNC")
+        # If we have less than 58 characters, add limit parameter to get all characters
+        if existing_count < 58:
+            api_url += "?limit=58"
+
         response = requests.get(api_url, timeout=15)
         if response.status_code == 200:
             data = response.json()
@@ -22,8 +28,6 @@ def sync_all_characters():
             synced_count = 0
             error_count = 0
             
-            print(f"📋 Found {len(characters)} characters to sync")
-            
             # Process characters in smaller batches to avoid transaction issues
             batch_size = 5
             for batch_start in range(0, len(characters), batch_size):
@@ -31,15 +35,13 @@ def sync_all_characters():
                 batch = characters[batch_start:batch_end]
                 
                 batch_num = batch_start//batch_size + 1
-                print(f"🔄 === PROCESSING BATCH {batch_num}: Characters {batch_start + 1}-{batch_end} ===")
-                
                 for i, character_summary in enumerate(batch):
                     global_index = batch_start + i
                     character_name = character_summary.get('name', 'Unknown')
                     character_id = character_summary.get('id')
                     
                     try:
-                        # Get full character data with transformations
+                        # Get full character with transformations
                         individual_url = f"https://dragonball-api.com/api/characters/{character_id}"
                         individual_response = requests.get(individual_url, timeout=10)
                         
@@ -71,13 +73,11 @@ def sync_all_characters():
                 
                 # Commit batch
                 frappe.db.commit()
-                print(f"✅ Batch {batch_num} committed")
             
             # Final commit to ensure everything is saved
             frappe.db.commit()
             
             success_message = _("Mass sync completed: {0} successful, {1} errors").format(synced_count, error_count)
-            print(f"🏁 MASS SYNC COMPLETE: {synced_count} success, {error_count} errors")
             
             frappe.msgprint(success_message)
             
@@ -93,8 +93,6 @@ def sync_all_characters():
             frappe.throw(_("Failed to fetch characters from API: {0}").format(response.status_code))
     except Exception as e:
         error_msg = f"Critical error in mass sync: {str(e)}"
-        print(f"❌ {error_msg}")
-        frappe.log_error(str(e), "Dragon Ball API Mass Sync Error")
         frappe.throw(_("Error syncing characters: {0}").format(str(e)))
         frappe.throw(_("Error syncing characters: {0}").format(str(e)))
 
@@ -259,16 +257,12 @@ def sync_character_for_mass(character_data):
     Sync individual character data for mass operations
     Similar to sync_character but without individual commits
     """
-    print("🔄 Syncing character for mass operation: %s", character_data)
     character_name = None
     try:
         character_name = character_data.get('name', '').strip()
         api_id = character_data.get('id')
         
-        print(f"\n🎯 === SYNC CHARACTER START: {character_name} (API ID: {api_id}) ===")
-        
         if not character_name:
-            print(f"❌ Character name is empty for API ID: {api_id}")
             frappe.log_error(
                 f"Character name is empty for API ID: {api_id}",
                 "Character Sync Error"
@@ -285,25 +279,17 @@ def sync_character_for_mass(character_data):
             "Dragon Ball Character", {"character_name": character_name}
         )
         
-        print(f"🔍 Existing by API ID: {existing_char_by_api}")
-        print(f"🔍 Existing by name: {existing_char_by_name}")
-        
         if existing_char_by_api:
             # Update existing character by API ID
             doc = frappe.get_doc("Dragon Ball Character", existing_char_by_api)
-            print(f"📝 Updating existing character: {character_name}")
         elif existing_char_by_name:
             # Character with same name exists but different API ID
-            print(f"⚠️ Character with name '{character_name}' already exists with different API ID. Skipping.")
             return None
         else:
             # Create new character
-            print(f"🆕 Creating new character: {character_name}")
             doc = frappe.new_doc("Dragon Ball Character")
             doc.api_id = api_id
             doc.character_name = character_name
-        
-        print("📝 Setting character fields...")
         # Update character fields
         doc.character_name = character_name
         doc.ki = character_data.get('ki', '')
@@ -312,8 +298,7 @@ def sync_character_for_mass(character_data):
         doc.gender = character_data.get('gender', '')
         doc.description = character_data.get('description', '')
         doc.image_url = character_data.get('image', '')
-        
-        print("💾 About to save document...")
+
         
         # Save the document FIRST without transformations
         try:
@@ -346,7 +331,6 @@ def sync_character_for_mass(character_data):
         
         # Now sync transformations AFTER saving - DIRECT APPROACH
         transformations_data = character_data.get('transformations', [])
-        print(f"🔍 Processing {len(transformations_data)} transformations for {character_name}...")
         
         if transformations_data:
             try:
@@ -354,7 +338,6 @@ def sync_character_for_mass(character_data):
                 
                 # Clear existing transformations
                 doc.set('transformations', [])
-                print("✅ Cleared existing transformations")
                 
                 # Add transformations directly (same as debug function)
                 successful_count = 0
@@ -396,14 +379,10 @@ def sync_character_for_mass(character_data):
                 
                 # Check transformations after save
                 after_save_count = len(doc.transformations) if doc.transformations else 0
-                print(f"📊 Transformations after save: {after_save_count}")
-                print(f"✅ Saved with {successful_count} transformations added, {after_save_count} final count")
                 
                 # DO NOT commit here - let batch handle commits
-                print("🔄 Ready for batch commit")
                 
             except Exception as trans_error:
-                print(f"❌ Error with transformations: {trans_error}")
                 # Don't let transformation errors kill the character sync
                 frappe.log_error(
                     str(trans_error), 
@@ -412,7 +391,6 @@ def sync_character_for_mass(character_data):
                 # Character will still be saved without transformations
                 print(f"⚠️ Character prepared without transformations: {character_name}")
         else:
-            print("📭 No transformations to process")
             # Ensure transformations field is initialized even if empty
             doc.set('transformations', [])
         
