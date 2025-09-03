@@ -3,27 +3,121 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block head_include %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- jQuery - Required for this dashboard -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+// Ensure jQuery doesn't conflict with other libraries
+if (window.$) {
+    window.jQ = jQuery.noConflict();
+    window.$ = window.$ || window.jQ;
+}
+</script>
+<!-- Tailwind CSS - Production Ready -->
+<!-- For development: CDN (current setup) -->
+<!-- For production: Use PostCSS plugin or Tailwind CLI -->
+<!-- 
+Production Setup Instructions:
+1. Install Tailwind CSS: npm install -D tailwindcss
+2. Create tailwind.config.js: npx tailwindcss init
+3. Add to your main CSS file: @tailwind base; @tailwind components; @tailwind utilities;
+4. Build CSS: npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch
+5. Include the built CSS file instead of CDN
+-->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    'dragon-orange': '#FF6B35',
-                    'dragon-purple': '#764BA2',
-                    'dragon-gold': '#FFD700',
-                    'dragon-blue': '#4F46E5',
-                    'ki-energy': '#00FFD4'
-                },
-                animation: {
-                    'float': 'float 3s ease-in-out infinite',
-                    'pulse-slow': 'pulse 3s infinite',
-                    'bounce-slow': 'bounce 2s infinite',
-                    'spin-slow': 'spin 3s linear infinite'
+    // Enhanced Tailwind configuration for Dragon Ball theme
+    window.tailwind_configured = false;
+    
+    function configureTailwind() {
+        if (window.tailwind && !window.tailwind_configured) {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'dragon-orange': '#FF6B35',
+                            'dragon-purple': '#764BA2', 
+                            'dragon-gold': '#FFD700',
+                            'dragon-blue': '#4F46E5',
+                            'ki-energy': '#00FFD4',
+                            'saiyan-blue': '#1E40AF',
+                            'ultra-instinct': '#F8FAFC'
+                        },
+                        animation: {
+                            'float': 'float 3s ease-in-out infinite',
+                            'pulse-slow': 'pulse 3s infinite',
+                            'bounce-slow': 'bounce 2s infinite',
+                            'spin-slow': 'spin 3s linear infinite',
+                            'glow': 'glow 2s infinite alternate'
+                        }
+                    }
                 }
-            }
+            };
+            window.tailwind_configured = true;
+            console.log('Tailwind CSS configured successfully');
+        } else if (!window.tailwind) {
+            console.warn('Tailwind CSS not loaded yet, retrying...');
+            setTimeout(configureTailwind, 100);
         }
     }
+    
+    // Configure Tailwind when available
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', configureTailwind);
+    } else {
+        configureTailwind();
+    }
+</script>
+
+<!-- Enhanced Frappe Integration -->
+<script>
+    // Ensure window.frappe is available and properly initialized
+    window.frappe = window.frappe || {};
+    window.frappe.ready = window.frappe.ready || function(fn) { 
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fn);
+        } else {
+            fn();
+        }
+    };
+    
+    // Enhanced error handling for missing Frappe methods
+    window.frappe.call = window.frappe.call || function(options) {
+        console.error('Frappe.call not available. Make sure Frappe framework is loaded.');
+        if (options.error) {
+            options.error({message: 'Frappe framework not loaded'});
+        }
+    };
+    
+    window.frappe.show_alert = window.frappe.show_alert || function(options) {
+        var message = typeof options === 'string' ? options : options.message;
+        var indicator = typeof options === 'object' ? options.indicator : 'blue';
+        
+        // Fallback to browser alert if frappe.show_alert is not available
+        console.log('[' + indicator.toUpperCase() + '] ' + message);
+        
+        // Create a simple toast notification
+        var toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium shadow-lg';
+        toast.style.backgroundColor = indicator === 'green' ? '#10B981' : 
+                                    indicator === 'red' ? '#EF4444' : 
+                                    indicator === 'orange' ? '#F59E0B' : '#3B82F6';
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(function() {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(function() {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    };
+</script>
 </script>
 <style>
     @keyframes float {
@@ -142,23 +236,139 @@
 </div>
 
 <script>
-// Initialize dashboard when page loads
-frappe.ready(function() {
-    load_dashboard_data();
-    setup_search();
+// Check dependencies and provide feedback
+(function() {
+    console.log('Dragon Ball Dashboard: Initializing...');
+    
+    if (!window.$) {
+        console.error('Dragon Ball Dashboard: jQuery is not loaded!');
+        return;
+    }
+    
+    if (!window.tailwind) {
+        console.warn('Dragon Ball Dashboard: Tailwind CSS might not be loaded');
+    }
+    
+    console.log('Dragon Ball Dashboard: Core dependencies loaded successfully');
+})();
+
+// Utility functions for safer DOM operations
+window.dragonBallUtils = {
+    safeJQuery: function(selector) {
+        try {
+            return window.$ && window.$(selector);
+        } catch (error) {
+            console.error('jQuery operation failed:', error);
+            return null;
+        }
+    },
+    
+    safeHtml: function(selector, html) {
+        try {
+            var element = this.safeJQuery(selector);
+            if (element && element.length) {
+                element.html(html);
+                return true;
+            }
+        } catch (error) {
+            console.error('HTML operation failed:', error);
+        }
+        return false;
+    },
+    
+    safeText: function(selector, text) {
+        try {
+            var element = this.safeJQuery(selector);
+            if (element && element.length) {
+                element.text(text);
+                return true;
+            }
+        } catch (error) {
+            console.error('Text operation failed:', error);
+        }
+        return false;
+    }
+};
+
+// Ensure jQuery and frappe are available
+function waitForDependencies(callback) {
+    if (window.$ && window.frappe && window.frappe.ready) {
+        callback();
+    } else {
+        setTimeout(function() {
+            waitForDependencies(callback);
+        }, 100);
+    }
+}
+
+// Initialize dashboard when page loads - Improved error handling
+$(document).ready(function() {
+    try {
+        waitForDependencies(function() {
+            if (frappe && frappe.ready) {
+                frappe.ready(function() {
+                    load_dashboard_data();
+                    setup_search();
+                });
+            } else {
+                // Fallback if frappe.ready is not available
+                load_dashboard_data();
+                setup_search();
+            }
+        });
+    } catch (error) {
+        console.error('Error during jQuery initialization:', error);
+        // Fallback initialization
+        setTimeout(function() {
+            initializeFallback();
+        }, 1000);
+    }
 });
 
+// Fallback initialization without frappe.ready if it doesn't load
+setTimeout(function() {
+    if (!window.dashboard_initialized) {
+        console.log("Frappe not fully loaded, using fallback initialization");
+        initializeFallback();
+    }
+}, 3000);
+
+function initializeFallback() {
+    if (window.$ && !window.dashboard_initialized) {
+        window.dashboard_initialized = true;
+        load_dashboard_data();
+        setup_search();
+    }
+}
+
 function show_loading() {
-    $('#loading-spinner').css('display', 'flex').hide().fadeIn(300);
-    $('#dashboard-content').addClass('opacity-50 pointer-events-none');
+    try {
+        if (window.$ && $('#loading-spinner').length && $('#dashboard-content').length) {
+            $('#loading-spinner').css('display', 'flex').hide().fadeIn(300);
+            $('#dashboard-content').addClass('opacity-50 pointer-events-none');
+        }
+    } catch (error) {
+        console.error('Error in show_loading:', error);
+    }
 }
 
 function hide_loading() {
-    $('#loading-spinner').fadeOut(300);
-    $('#dashboard-content').removeClass('opacity-50 pointer-events-none');
+    try {
+        if (window.$ && $('#loading-spinner').length && $('#dashboard-content').length) {
+            $('#loading-spinner').fadeOut(300);
+            $('#dashboard-content').removeClass('opacity-50 pointer-events-none');
+        }
+    } catch (error) {
+        console.error('Error in hide_loading:', error);
+    }
 }
 
 function sync_all_characters() {
+    if (!window.frappe || !frappe.call) {
+        alert('Error: Frappe no está disponible. Por favor, recarga la página.');
+        return;
+    }
+    
     show_loading();
     
     frappe.call({
@@ -166,19 +376,27 @@ function sync_all_characters() {
         callback: function(r) {
             hide_loading();
             if (r.message && r.message.status === 'success') {
-                frappe.show_alert({
-                    message: 'Se sincronizaron ' + r.message.synced_count + ' personajes exitosamente!',
-                    indicator: 'green'
-                });
+                if (frappe.show_alert) {
+                    frappe.show_alert({
+                        message: 'Se sincronizaron ' + r.message.synced_count + ' personajes exitosamente!',
+                        indicator: 'green'
+                    });
+                } else {
+                    alert('Se sincronizaron ' + r.message.synced_count + ' personajes exitosamente!');
+                }
                 load_dashboard_data(); // Refresh dashboard
             }
         },
         error: function(r) {
             hide_loading();
-            frappe.show_alert({
-                message: 'Error sincronizando personajes',
-                indicator: 'red'
-            });
+            if (frappe.show_alert) {
+                frappe.show_alert({
+                    message: 'Error sincronizando personajes',
+                    indicator: 'red'
+                });
+            } else {
+                alert('Error sincronizando personajes');
+            }
         }
     });
 }
@@ -187,21 +405,92 @@ function sync_all_characters() {
 var original_dashboard_data = null;
 var current_sort_type = null;
 
+// Client-side pagination variables
+var all_warriors_data = [];
+var all_gallery_data = [];
+var warriors_current_page = 1;
+var warriors_per_page = 10;
+var gallery_current_page = 1;
+var gallery_per_page = 8;
+var warriors_total_pages = 1;
+var gallery_total_pages = 1;
+var pagination_initialized = false;
+
 function load_dashboard_data() {
+    if (!window.frappe || !frappe.call) {
+        console.error('Frappe no está disponible');
+        $('#dashboard-content').html(`
+            <div class="text-center py-12">
+                <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
+                    <h3 class="text-2xl font-bold text-red-400 mb-4">Error de Conexión</h3>
+                    <p class="text-white mb-6">No se puede conectar con el servidor. Por favor, verifica:</p>
+                    <ul class="text-left text-gray-300 mb-6 space-y-2">
+                        <li>• Que estés conectado a internet</li>
+                        <li>• Que la aplicación esté correctamente instalada</li>
+                        <li>• Que tengas permisos de acceso</li>
+                    </ul>
+                    <button onclick="location.reload()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
+                        Recargar Página
+                    </button>
+                </div>
+            </div>
+        `);
+        return;
+    }
+    
     show_loading();
     
+    // Load all data at once for client-side pagination
     frappe.call({
         method: 'dragon_ball_app.db_app.dashboard.dashboard.get_dashboard_data',
         callback: function(r) {
             hide_loading();
             if (r.message) {
-                original_dashboard_data = r.message; // Store original data
+                original_dashboard_data = r.message;
+                
+                // Use the existing data from get_dashboard_data for client-side pagination
+                all_warriors_data = r.message.top_ki_characters || [];
+                all_gallery_data = r.message.recent_characters || [];
+                
+                console.log('Loaded data:', {
+                    total_warriors: all_warriors_data.length,
+                    total_gallery: all_gallery_data.length
+                });
+                
                 render_dashboard(r.message);
+                initialize_client_side_pagination();
+                window.dashboard_initialized = true;
+            } else {
+                $('#dashboard-content').html(`
+                    <div class="text-center py-12">
+                        <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
+                            <h3 class="text-2xl font-bold text-yellow-400 mb-4">Sin Datos</h3>
+                            <p class="text-white mb-6">No se encontraron datos en la base de datos.</p>
+                            <button onclick="sync_all_characters()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
+                                Sincronizar Datos
+                            </button>
+                        </div>
+                    </div>
+                `);
             }
         },
         error: function(r) {
             hide_loading();
-            $('#dashboard-content').html('<div class="alert alert-danger">Error cargando datos del dashboard</div>');
+            console.error('Error loading dashboard:', r);
+            $('#dashboard-content').html(`
+                <div class="text-center py-12">
+                    <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
+                        <h3 class="text-2xl font-bold text-red-400 mb-4">Error del Servidor</h3>
+                        <p class="text-white mb-6">Hubo un problema al cargar los datos del dashboard.</p>
+                        <button onclick="load_dashboard_data()" class="px-6 py-2 bg-gradient-to-r from-dragon-blue to-dragon-purple rounded-full text-white font-bold hover:scale-105 transition-transform mr-4">
+                            Reintentar
+                        </button>
+                        <button onclick="sync_all_characters()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
+                            Sincronizar
+                        </button>
+                    </div>
+                </div>
+            `);
         }
     });
 }
@@ -367,11 +656,8 @@ function sort_by_transformations(data) {
 }
 
 function update_sorted_sections(data, sort_type) {
-    // Update Elite Warriors section
-    $('#elite-warriors-list').html(render_top_characters(data.top_ki_characters));
-    
-    // Update Character Gallery section
-    $('#character-gallery').html(render_recent_characters(data.recent_characters));
+    // Update client-side data with sorted data
+    update_client_data_for_sorting(data);
     
     // Add sorting indicator
     add_sort_indicator(sort_type);
@@ -422,9 +708,21 @@ function reset_sorting() {
     });
     
     setTimeout(function() {
-        // Update sections with original data
-        $('#elite-warriors-list').html(render_top_characters(original_dashboard_data.top_ki_characters));
-        $('#character-gallery').html(render_recent_characters(original_dashboard_data.recent_characters));
+        // Restore original data
+        all_warriors_data = original_dashboard_data.top_ki_characters || [];
+        all_gallery_data = original_dashboard_data.recent_characters || [];
+        
+        // Recalculate pagination
+        warriors_total_pages = Math.ceil(all_warriors_data.length / warriors_per_page);
+        gallery_total_pages = Math.ceil(all_gallery_data.length / gallery_per_page);
+        
+        // Reset to first page
+        warriors_current_page = 1;
+        gallery_current_page = 1;
+        
+        // Update displays
+        load_warriors_page_client(1);
+        load_gallery_page_client(1);
         
         // Remove sort indicators
         $('.sort-indicator').remove();
@@ -435,6 +733,122 @@ function reset_sorting() {
         });
     }, 300);
 }
+
+// ================== CLIENT-SIDE PAGINATION FUNCTIONS ==================
+
+function initialize_client_side_pagination() {
+    if (pagination_initialized) {
+        return; // Avoid multiple initializations
+    }
+    
+    pagination_initialized = true;
+    console.log('Initializing client-side pagination...');
+    console.log('Warriors data:', all_warriors_data.length, 'characters');
+    console.log('Gallery data:', all_gallery_data.length, 'characters');
+    
+    // Calculate total pages
+    warriors_total_pages = Math.ceil(all_warriors_data.length / warriors_per_page);
+    gallery_total_pages = Math.ceil(all_gallery_data.length / gallery_per_page);
+    
+    // Load first page of each section
+    load_warriors_page_client(1);
+    load_gallery_page_client(1);
+}
+
+function load_warriors_page_client(page) {
+    console.log('Loading warriors page:', page, 'of', warriors_total_pages);
+    warriors_current_page = page;
+    
+    // Calculate start and end indices
+    var startIndex = (page - 1) * warriors_per_page;
+    var endIndex = startIndex + warriors_per_page;
+    
+    // Get data for current page
+    var pageData = all_warriors_data.slice(startIndex, endIndex);
+    
+    // Update the UI
+    update_warriors_list_client(pageData);
+    update_warriors_pagination_client();
+}
+
+function load_gallery_page_client(page) {
+    console.log('Loading gallery page:', page, 'of', gallery_total_pages);
+    gallery_current_page = page;
+    
+    // Calculate start and end indices
+    var startIndex = (page - 1) * gallery_per_page;
+    var endIndex = startIndex + gallery_per_page;
+    
+    // Get data for current page
+    var pageData = all_gallery_data.slice(startIndex, endIndex);
+    
+    // Update the UI
+    update_gallery_characters_client(pageData);
+    update_gallery_pagination_client();
+}
+
+function update_warriors_list_client(characters) {
+    console.log('Updating warriors list with:', characters.length, 'characters');
+    var warriors_html = render_top_characters(characters);
+    $('#elite-warriors-list').html(warriors_html);
+}
+
+function update_gallery_characters_client(characters) {
+    console.log('Updating gallery with:', characters.length, 'characters');
+    var gallery_html = render_recent_characters(characters);
+    $('#character-gallery').html(gallery_html);
+}
+
+function update_warriors_pagination_client() {
+    // Update page info
+    $('#warriors-page-info').text(`${warriors_current_page} / ${warriors_total_pages}`);
+    
+    // Update button states
+    var hasPrev = warriors_current_page > 1;
+    var hasNext = warriors_current_page < warriors_total_pages;
+    
+    $('#warriors-prev-btn').prop('disabled', !hasPrev);
+    $('#warriors-next-btn').prop('disabled', !hasNext);
+    
+    // Update button onclick handlers
+    $('#warriors-prev-btn').attr('onclick', hasPrev ? `load_warriors_page_client(${warriors_current_page - 1})` : '');
+    $('#warriors-next-btn').attr('onclick', hasNext ? `load_warriors_page_client(${warriors_current_page + 1})` : '');
+}
+
+function update_gallery_pagination_client() {
+    // Update page info
+    $('#gallery-page-info').text(`Página ${gallery_current_page} de ${gallery_total_pages}`);
+    
+    // Update button states
+    var hasPrev = gallery_current_page > 1;
+    var hasNext = gallery_current_page < gallery_total_pages;
+    
+    $('#gallery-prev-btn').prop('disabled', !hasPrev);
+    $('#gallery-next-btn').prop('disabled', !hasNext);
+    
+    // Update button onclick handlers
+    $('#gallery-prev-btn').attr('onclick', hasPrev ? `load_gallery_page_client(${gallery_current_page - 1})` : '');
+    $('#gallery-next-btn').attr('onclick', hasNext ? `load_gallery_page_client(${gallery_current_page + 1})` : '');
+}
+
+// Function to update data for sorting (client-side)
+function update_client_data_for_sorting(sorted_data) {
+    if (sorted_data.top_ki_characters) {
+        all_warriors_data = sorted_data.top_ki_characters;
+        warriors_total_pages = Math.ceil(all_warriors_data.length / warriors_per_page);
+        warriors_current_page = 1; // Reset to first page
+        load_warriors_page_client(1);
+    }
+    
+    if (sorted_data.recent_characters) {
+        all_gallery_data = sorted_data.recent_characters;
+        gallery_total_pages = Math.ceil(all_gallery_data.length / gallery_per_page);
+        gallery_current_page = 1; // Reset to first page
+        load_gallery_page_client(1);
+    }
+}
+
+// ================== END CLIENT-SIDE PAGINATION FUNCTIONS ==================
 
 function render_dashboard(data) {
     // Calculate the highest Ki level correctly using the parseKiValue function
@@ -580,12 +994,36 @@ function render_dashboard(data) {
             <!-- Right Column: Top Warriors -->
             <div class="xl:col-span-2">
                 <div class="glass rounded-2xl p-6 h-full">
-                    <div class="flex items-center gap-3 mb-6">
-                        <span class="text-2xl">🥇</span>
-                        <h3 class="text-2xl font-bold text-white">Guerreros Elite</h3>
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🥇</span>
+                            <h3 class="text-2xl font-bold text-white">Guerreros Elite</h3>
+                        </div>
+                        <!-- Warriors Pagination Controls -->
+                        <div id="warriors-pagination-top" class="flex items-center gap-2">
+                            <button onclick="load_warriors_page_client(warriors_current_page - 1)" 
+                                    id="warriors-prev-btn" 
+                                    disabled
+                                    class="px-3 py-1 bg-dragon-blue bg-opacity-30 text-white rounded-lg hover:bg-opacity-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                                &lt;
+                            </button>
+                            <span id="warriors-page-info" class="text-white text-sm px-3">
+                                - / -
+                            </span>
+                            <button onclick="load_warriors_page_client(warriors_current_page + 1)" 
+                                    id="warriors-next-btn"
+                                    disabled
+                                    class="px-3 py-1 bg-dragon-blue bg-opacity-30 text-white rounded-lg hover:bg-opacity-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                                &gt;
+                            </button>
+                        </div>
                     </div>
                     <div class="space-y-4" id="elite-warriors-list">
-                        ${render_top_characters(data.top_ki_characters)}
+                        <!-- Warriors will be loaded via pagination -->
+                        <div class="text-center py-8 text-gray-400">
+                            <div class="animate-spin w-8 h-8 border-2 border-dragon-gold border-t-transparent rounded-full mx-auto mb-4"></div>
+                            <p>Cargando guerreros elite...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -599,13 +1037,54 @@ function render_dashboard(data) {
                     <h3 class="text-2xl font-bold text-white">Galería de Personajes</h3>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="character-gallery">
-                    ${render_recent_characters(data.recent_characters)}
+                    <!-- Gallery will be loaded via pagination -->
+                    <div class="col-span-full text-center py-8 text-gray-400">
+                        <div class="animate-spin w-8 h-8 border-2 border-dragon-purple border-t-transparent rounded-full mx-auto mb-4"></div>
+                        <p>Cargando galería de personajes...</p>
+                    </div>
+                </div>
+                <!-- Gallery Pagination Controls -->
+                <div id="gallery-pagination-bottom" class="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-white border-opacity-10">
+                    <button onclick="load_gallery_page_client(gallery_current_page - 1)" 
+                            id="gallery-prev-btn"
+                            disabled
+                            class="px-4 py-2 bg-dragon-purple bg-opacity-30 text-white rounded-lg hover:bg-opacity-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        &lt; Anterior
+                    </button>
+                    <span id="gallery-page-info" class="text-white px-4">
+                        Página - de -
+                    </span>
+                    <button onclick="load_gallery_page_client(gallery_current_page + 1)" 
+                            id="gallery-next-btn"
+                            disabled
+                            class="px-4 py-2 bg-dragon-purple bg-opacity-30 text-white rounded-lg hover:bg-opacity-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        Siguiente &gt;
+                    </button>
                 </div>
             </div>
         </div>
     `;
 
     $('#dashboard-content').html(dashboard_html);
+    
+    // Initialize with the existing data first
+    setTimeout(function() {
+        // Render initial data immediately
+        render_initial_data(data);
+    }, 100);
+}
+
+// New function to render initial data immediately
+function render_initial_data(data) {
+    console.log('Rendering initial data with:', data.top_ki_characters?.length, 'top characters and', data.recent_characters?.length, 'recent characters');
+    
+    // Render race distribution immediately
+    if (data.race_distribution && data.race_distribution.length > 0) {
+        $('#race-distribution-container').html(render_race_distribution(data.race_distribution));
+    }
+    
+    // The client-side pagination will handle the actual rendering of characters
+    // So we don't need to override here - just let pagination do its job
 }
 
 function render_race_distribution(race_data) {

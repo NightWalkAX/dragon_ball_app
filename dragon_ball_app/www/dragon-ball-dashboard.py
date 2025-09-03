@@ -11,9 +11,12 @@ def get_context(context):
     
     # Check if user is logged in
     if frappe.session.user == "Guest":
-        frappe.throw(
-            "Please login to access the dashboard", 
-            frappe.PermissionError
-        )
+        # Instead of throwing an error, redirect to login
+        frappe.local.flags.redirect_location = "/login?redirect-to=/dragon-ball-dashboard"
+        raise frappe.Redirect
+    
+    # Add any additional context data needed for the page
+    context.show_sidebar = False
+    context.no_breadcrumbs = True
     
     return context

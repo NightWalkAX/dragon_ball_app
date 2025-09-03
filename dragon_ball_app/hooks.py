@@ -16,8 +16,8 @@ app_include_css = "/assets/dragon_ball_app/css/dragon_ball_app.css"
 app_include_js = "/assets/dragon_ball_app/js/dashboard.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/dragon_ball_app/css/dragon_ball_app.css"
-# web_include_js = "/assets/dragon_ball_app/js/dragon_ball_app.js"
+web_include_css = "/assets/dragon_ball_app/css/dragon_ball_app.css"
+web_include_js = "/assets/dragon_ball_app/js/dashboard.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "dragon_ball_app/public/scss/website"
@@ -204,10 +204,14 @@ app_include_js = "/assets/dragon_ball_app/js/dashboard.js"
 # Website Pages
 website_route_rules = [
     {
-        "from_route": "/dragon-ball-dashboard", 
+        "from_route": "/dragon-ball-dashboard",
         "to_route": "dragon-ball-dashboard"
     },
 ]
+
+# Website Pages List
+# This ensures the page is recognized as a web page
+website_generators = []
 
 # Custom Pages for Desk
 page_js = {
