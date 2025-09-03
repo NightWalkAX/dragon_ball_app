@@ -329,6 +329,12 @@ $(document).ready(function() {
 setTimeout(function() {
     if (!window.dashboard_initialized) {
         console.log("Frappe not fully loaded, using fallback initialization");
+        console.log("Environment check:", {
+            frappe_available: !!window.frappe,
+            frappe_call_available: !!(window.frappe && window.frappe.call),
+            jquery_available: !!window.$,
+            location: window.location.href
+        });
         initializeFallback();
     }
 }, 3000);
@@ -477,16 +483,128 @@ function load_dashboard_data() {
         error: function(r) {
             hide_loading();
             console.error('Error loading dashboard:', r);
+            
+            // More detailed error information for debugging
+            var errorDetails = '';
+            if (r && r.responseJSON && r.responseJSON.message) {
+                errorDetails = r.responseJSON.message;
+            } else if (r && r.statusText) {
+                errorDetails = `HTTP ${r.status}: ${r.statusText}`;
+            } else if (r && r.message) {
+                errorDetails = r.message;
+            }
+            
             $('#dashboard-content').html(`
                 <div class="text-center py-12">
                     <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
                         <h3 class="text-2xl font-bold text-red-400 mb-4">Error del Servidor</h3>
-                        <p class="text-white mb-6">Hubo un problema al cargar los datos del dashboard.</p>
-                        <button onclick="load_dashboard_data()" class="px-6 py-2 bg-gradient-to-r from-dragon-blue to-dragon-purple rounded-full text-white font-bold hover:scale-105 transition-transform mr-4">
-                            Reintentar
-                        </button>
-                        <button onclick="sync_all_characters()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
-                            Sincronizar
+                        <p class="text-white mb-4">Hubo un problema al cargar los datos del dashboard.</p>
+                        ${errorDetails ? `<div class="bg-red-900 bg-opacity-30 p-3 rounded-lg mb-4">
+                            <p class="text-red-300 text-sm">Detalles del error:</p>
+                            <p class="text-red-200 text-xs font-mono">${errorDetails}</p>
+                        </div>` : ''}
+                        <div class="space-y-3">
+                            <button onclick="load_dashboard_data()" class="block w-full px-6 py-2 bg-gradient-to-r from-dragon-blue to-dragon-purple rounded-full text-white font-bold hover:scale-105 transition-transform">
+                                Reintentar Carga de Datos
+                            </button>
+                            <button onclick="test_api_connection()" class="block w-full px-6 py-2 bg-gradient-to-r from-dragon-purple to-dragon-pink rounded-full text-white font-bold hover:scale-105 transition-transform">
+                                Probar Conexión API
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+    });
+}
+
+// Test API connection for debugging
+function test_api_connection() {
+    if (!window.frappe || !frappe.call) {
+        $('#dashboard-content').html(`
+            <div class="text-center py-12">
+                <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
+                    <h3 class="text-2xl font-bold text-red-400 mb-4">Frappe No Disponible</h3>
+                    <p class="text-white mb-4">El objeto Frappe no está disponible. Esto indica un problema con la configuración del sitio.</p>
+                    <button onclick="location.reload()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
+                        Recargar Página
+                    </button>
+                </div>
+            </div>
+        `);
+        return;
+    }
+
+    show_loading();
+    
+    // Test with a simple API call first
+    frappe.call({
+        method: 'frappe.ping',
+        callback: function(r) {
+            console.log('Ping successful:', r);
+            
+            // Now test our specific dashboard API
+            frappe.call({
+                method: 'dragon_ball_app.db_app.dashboard.dashboard.get_dashboard_data',
+                callback: function(r2) {
+                    hide_loading();
+                    $('#dashboard-content').html(`
+                        <div class="text-center py-12">
+                            <div class="glass-dark rounded-3xl p-8 max-w-2xl mx-auto">
+                                <h3 class="text-2xl font-bold text-green-400 mb-4">✅ Conexión API Exitosa</h3>
+                                <div class="text-left space-y-4">
+                                    <div class="bg-green-900 bg-opacity-30 p-4 rounded-lg">
+                                        <p class="text-green-300 font-semibold">Frappe Ping: ✅ OK</p>
+                                        <p class="text-green-200 text-sm">El servidor Frappe está respondiendo</p>
+                                    </div>
+                                    <div class="bg-green-900 bg-opacity-30 p-4 rounded-lg">
+                                        <p class="text-green-300 font-semibold">Dashboard API: ✅ OK</p>
+                                        <p class="text-green-200 text-sm">Total personajes: ${r2.message ? r2.message.total_characters : 'No disponible'}</p>
+                                    </div>
+                                </div>
+                                <button onclick="load_dashboard_data()" class="mt-6 px-8 py-3 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
+                                    Cargar Dashboard Completo
+                                </button>
+                            </div>
+                        </div>
+                    `);
+                },
+                error: function(r2) {
+                    hide_loading();
+                    $('#dashboard-content').html(`
+                        <div class="text-center py-12">
+                            <div class="glass-dark rounded-3xl p-8 max-w-2xl mx-auto">
+                                <h3 class="text-2xl font-bold text-yellow-400 mb-4">⚠️ Conexión Parcial</h3>
+                                <div class="text-left space-y-4">
+                                    <div class="bg-green-900 bg-opacity-30 p-4 rounded-lg">
+                                        <p class="text-green-300 font-semibold">Frappe Ping: ✅ OK</p>
+                                        <p class="text-green-200 text-sm">El servidor Frappe está respondiendo</p>
+                                    </div>
+                                    <div class="bg-red-900 bg-opacity-30 p-4 rounded-lg">
+                                        <p class="text-red-300 font-semibold">Dashboard API: ❌ FALLO</p>
+                                        <p class="text-red-200 text-sm">Error: ${r2.statusText || r2.message || 'Desconocido'}</p>
+                                        <p class="text-red-200 text-xs mt-2">Posibles causas: Permisos, base de datos, o configuración del app</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        },
+        error: function(r) {
+            hide_loading();
+            $('#dashboard-content').html(`
+                <div class="text-center py-12">
+                    <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
+                        <h3 class="text-2xl font-bold text-red-400 mb-4">❌ Conexión API Fallida</h3>
+                        <div class="bg-red-900 bg-opacity-30 p-4 rounded-lg mb-4">
+                            <p class="text-red-300 font-semibold">Frappe Ping: ❌ FALLO</p>
+                            <p class="text-red-200 text-sm">Error: ${r.statusText || r.message || 'No se puede conectar al servidor'}</p>
+                        </div>
+                        <p class="text-white text-sm mb-4">El servidor no está respondiendo. Verifica la configuración del sitio.</p>
+                        <button onclick="location.reload()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
+                            Recargar Página
                         </button>
                     </div>
                 </div>

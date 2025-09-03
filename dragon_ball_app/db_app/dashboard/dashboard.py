@@ -4,7 +4,7 @@ import logging
 import frappe
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_dashboard_data():
     """Get dashboard data for Dragon Ball characters"""
     try:
@@ -63,7 +63,7 @@ def get_dashboard_data():
         }
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_character_details(character_name):
     """Get detailed information about a specific character"""
     try:
@@ -122,7 +122,7 @@ def get_character_details(character_name):
         return {"error": str(e)}
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def search_characters(search_term=""):
     """Search characters by name or race"""
     try:
@@ -143,7 +143,7 @@ def search_characters(search_term=""):
         return []
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_top_characters_paginated(page=1, per_page=10, sort_by="ki"):
     """Get top characters with pagination"""
     try:
@@ -209,7 +209,7 @@ def get_top_characters_paginated(page=1, per_page=10, sort_by="ki"):
         }
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_gallery_characters_paginated(page=1, per_page=8, sort_by="creation"):
     """Get gallery characters with pagination"""
     try:
@@ -271,4 +271,36 @@ def get_gallery_characters_paginated(page=1, per_page=8, sort_by="creation"):
                 "has_next": False,
                 "has_prev": False
             }
+        }
+
+@frappe.whitelist(allow_guest=True)
+def get_debug_info():
+    """Get debug information about the current environment"""
+    try:
+        # Get basic environment info
+        character_count = frappe.db.count("Dragon Ball Character")
+        
+        # Test database connectivity
+        db_status = "connected"
+        try:
+            frappe.db.sql("SELECT 1")
+        except Exception as e:
+            db_status = f"error: {str(e)}"
+        
+        return {
+            "status": "success",
+            "environment": {
+                "site": frappe.local.site,
+                "user": frappe.session.user,
+                "character_count": character_count,
+                "database_status": db_status,
+                "app_installed": True,
+                "timestamp": frappe.utils.now()
+            }
+        }
+    except Exception as e:
+        frappe.log_error(str(e), "Debug Info Error")
+        return {
+            "status": "error",
+            "error": str(e)
         }
