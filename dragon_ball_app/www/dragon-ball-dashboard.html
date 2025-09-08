@@ -69,55 +69,11 @@ Production Setup Instructions:
     }
 </script>
 
-<!-- Enhanced Frappe Integration -->
+<!-- Frappe Integration (Native API) -->
 <script>
-    // Ensure window.frappe is available and properly initialized
-    window.frappe = window.frappe || {};
-    window.frappe.ready = window.frappe.ready || function(fn) { 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', fn);
-        } else {
-            fn();
-        }
-    };
-    
-    // Enhanced error handling for missing Frappe methods
-    window.frappe.call = window.frappe.call || function(options) {
-        console.error('Frappe.call not available. Make sure Frappe framework is loaded.');
-        if (options.error) {
-            options.error({message: 'Frappe framework not loaded'});
-        }
-    };
-    
-    window.frappe.show_alert = window.frappe.show_alert || function(options) {
-        var message = typeof options === 'string' ? options : options.message;
-        var indicator = typeof options === 'object' ? options.indicator : 'blue';
-        
-        // Fallback to browser alert if frappe.show_alert is not available
-        console.log('[' + indicator.toUpperCase() + '] ' + message);
-        
-        // Create a simple toast notification
-        var toast = document.createElement('div');
-        toast.className = 'fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium shadow-lg';
-        toast.style.backgroundColor = indicator === 'green' ? '#10B981' : 
-                                    indicator === 'red' ? '#EF4444' : 
-                                    indicator === 'orange' ? '#F59E0B' : '#3B82F6';
-        toast.textContent = message;
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(function() {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
-            toast.style.transition = 'all 0.3s ease';
-            setTimeout(function() {
-                if (document.body.contains(toast)) {
-                    document.body.removeChild(toast);
-                }
-            }, 300);
-        }, 3000);
-    };
-</script>
+    // Frappe is automatically available in www pages
+    // No need for polyfills or fallbacks
+    console.log('Dragon Ball Dashboard: Using native Frappe API');
 </script>
 <style>
     @keyframes float {
@@ -239,17 +195,22 @@ Production Setup Instructions:
 // Check dependencies and provide feedback
 (function() {
     console.log('Dragon Ball Dashboard: Initializing...');
+    console.log('jQuery available:', !!window.$);
+    console.log('Frappe available:', !!window.frappe);
+    console.log('frappe.call available:', !!(window.frappe && window.frappe.call));
+    console.log('frappe.ready available:', !!(window.frappe && window.frappe.ready));
     
     if (!window.$) {
         console.error('Dragon Ball Dashboard: jQuery is not loaded!');
         return;
     }
     
-    if (!window.tailwind) {
-        console.warn('Dragon Ball Dashboard: Tailwind CSS might not be loaded');
+    if (!window.frappe) {
+        console.error('Dragon Ball Dashboard: Frappe is not loaded!');
+        return;
     }
     
-    console.log('Dragon Ball Dashboard: Core dependencies loaded successfully');
+    console.log('Dragon Ball Dashboard: All dependencies loaded successfully');
 })();
 
 // Utility functions for safer DOM operations
@@ -290,62 +251,20 @@ window.dragonBallUtils = {
     }
 };
 
-// Ensure jQuery and frappe are available
-function waitForDependencies(callback) {
-    if (window.$ && window.frappe && window.frappe.ready) {
-        callback();
-    } else {
-        setTimeout(function() {
-            waitForDependencies(callback);
-        }, 100);
-    }
-}
-
-// Initialize dashboard when page loads - Improved error handling
+// Initialize dashboard when page loads - Using native Frappe API
 $(document).ready(function() {
-    try {
-        waitForDependencies(function() {
-            if (frappe && frappe.ready) {
-                frappe.ready(function() {
-                    load_dashboard_data();
-                    setup_search();
-                });
-            } else {
-                // Fallback if frappe.ready is not available
-                load_dashboard_data();
-                setup_search();
-            }
-        });
-    } catch (error) {
-        console.error('Error during jQuery initialization:', error);
-        // Fallback initialization
-        setTimeout(function() {
-            initializeFallback();
-        }, 1000);
-    }
-});
-
-// Fallback initialization without frappe.ready if it doesn't load
-setTimeout(function() {
-    if (!window.dashboard_initialized) {
-        console.log("Frappe not fully loaded, using fallback initialization");
-        console.log("Environment check:", {
-            frappe_available: !!window.frappe,
-            frappe_call_available: !!(window.frappe && window.frappe.call),
-            jquery_available: !!window.$,
-            location: window.location.href
-        });
-        initializeFallback();
-    }
-}, 3000);
-
-function initializeFallback() {
-    if (window.$ && !window.dashboard_initialized) {
-        window.dashboard_initialized = true;
+    console.log('Dragon Ball Dashboard: DOM Ready');
+    console.log('Frappe available:', !!window.frappe);
+    console.log('frappe.call available:', !!(window.frappe && window.frappe.call));
+    
+    // Use Frappe's native ready function
+    frappe.ready(function() {
+        console.log('Dragon Ball Dashboard: Frappe Ready');
         load_dashboard_data();
         setup_search();
-    }
-}
+        window.dashboard_initialized = true;
+    });
+});
 
 function show_loading() {
     try {
@@ -370,11 +289,6 @@ function hide_loading() {
 }
 
 function sync_all_characters() {
-    if (!window.frappe || !frappe.call) {
-        alert('Error: Frappe no está disponible. Por favor, recarga la página.');
-        return;
-    }
-    
     show_loading();
     
     frappe.call({
@@ -382,27 +296,19 @@ function sync_all_characters() {
         callback: function(r) {
             hide_loading();
             if (r.message && r.message.status === 'success') {
-                if (frappe.show_alert) {
-                    frappe.show_alert({
-                        message: 'Se sincronizaron ' + r.message.synced_count + ' personajes exitosamente!',
-                        indicator: 'green'
-                    });
-                } else {
-                    alert('Se sincronizaron ' + r.message.synced_count + ' personajes exitosamente!');
-                }
+                frappe.show_alert({
+                    message: 'Se sincronizaron ' + r.message.synced_count + ' personajes exitosamente!',
+                    indicator: 'green'
+                });
                 load_dashboard_data(); // Refresh dashboard
             }
         },
         error: function(r) {
             hide_loading();
-            if (frappe.show_alert) {
-                frappe.show_alert({
-                    message: 'Error sincronizando personajes',
-                    indicator: 'red'
-                });
-            } else {
-                alert('Error sincronizando personajes');
-            }
+            frappe.show_alert({
+                message: 'Error sincronizando personajes',
+                indicator: 'red'
+            });
         }
     });
 }
@@ -423,27 +329,6 @@ var gallery_total_pages = 1;
 var pagination_initialized = false;
 
 function load_dashboard_data() {
-    if (!window.frappe || !frappe.call) {
-        console.error('Frappe no está disponible');
-        $('#dashboard-content').html(`
-            <div class="text-center py-12">
-                <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
-                    <h3 class="text-2xl font-bold text-red-400 mb-4">Error de Conexión</h3>
-                    <p class="text-white mb-6">No se puede conectar con el servidor. Por favor, verifica:</p>
-                    <ul class="text-left text-gray-300 mb-6 space-y-2">
-                        <li>• Que estés conectado a internet</li>
-                        <li>• Que la aplicación esté correctamente instalada</li>
-                        <li>• Que tengas permisos de acceso</li>
-                    </ul>
-                    <button onclick="location.reload()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
-                        Recargar Página
-                    </button>
-                </div>
-            </div>
-        `);
-        return;
-    }
-    
     show_loading();
     
     // Load all data at once for client-side pagination
@@ -520,21 +405,6 @@ function load_dashboard_data() {
 
 // Test API connection for debugging
 function test_api_connection() {
-    if (!window.frappe || !frappe.call) {
-        $('#dashboard-content').html(`
-            <div class="text-center py-12">
-                <div class="glass-dark rounded-3xl p-8 max-w-lg mx-auto">
-                    <h3 class="text-2xl font-bold text-red-400 mb-4">Frappe No Disponible</h3>
-                    <p class="text-white mb-4">El objeto Frappe no está disponible. Esto indica un problema con la configuración del sitio.</p>
-                    <button onclick="location.reload()" class="px-6 py-2 bg-gradient-to-r from-dragon-orange to-dragon-gold rounded-full text-white font-bold hover:scale-105 transition-transform">
-                        Recargar Página
-                    </button>
-                </div>
-            </div>
-        `);
-        return;
-    }
-
     show_loading();
     
     // Test with a simple API call first
