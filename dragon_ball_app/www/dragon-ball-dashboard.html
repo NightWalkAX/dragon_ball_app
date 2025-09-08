@@ -4,6 +4,7 @@
 
 {% block head_include %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ frappe.session.csrf_token }}">
 <!-- jQuery - Required for this dashboard -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
@@ -74,6 +75,39 @@ Production Setup Instructions:
     // Frappe is automatically available in www pages
     // No need for polyfills or fallbacks
     console.log('Dragon Ball Dashboard: Using native Frappe API');
+    
+    // CSRF Token handling for AJAX requests
+    function getCSRFToken() {
+        if (window.frappe && window.frappe.csrf_token) {
+            return window.frappe.csrf_token;
+        }
+        // Fallback: try to get from cookie
+        const cookieValue = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrf_token='))
+            ?.split('=')[1];
+        
+        if (cookieValue) {
+            return cookieValue;
+        }
+        
+        // Last resort: get from meta tag
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        if (metaTag) {
+            return metaTag.getAttribute('content');
+        }
+        
+        console.warn('CSRF token not found, AJAX requests may fail');
+        return '';
+    }
+    
+    // Override frappe.csrf_token if needed
+    window.frappe = window.frappe || {};
+    if (!window.frappe.csrf_token) {
+        window.frappe.csrf_token = getCSRFToken();
+    }
+    
+    console.log('Dragon Ball Dashboard: CSRF token available:', !!window.frappe.csrf_token);
 </script>
 <style>
     @keyframes float {
@@ -1354,15 +1388,30 @@ function setup_search() {
 }
 
 function search_characters(search_term) {
-    frappe.call({
-        method: 'dragon_ball_app.db_app.dashboard.dashboard.search_characters',
-        args: {
+    $.ajax({
+        url: '/api/method/dragon_ball_app.db_app.dashboard.dashboard.search_characters',
+        type: 'POST',
+        headers: {
+            'X-Frappe-CSRF-Token': getCSRFToken()
+        },
+        data: {
             search_term: search_term
         },
-        callback: function(r) {
+        success: function(r) {
             if (r.message) {
                 render_search_results(r.message);
             }
+        },
+        error: function(xhr, status, error) {
+            console.error('Search error:', error);
+            console.error('XHR status:', status, xhr.responseText);
+            $('#search-results').html(`
+                <div class="text-center text-red-400 py-8 glass rounded-xl">
+                    <div class="text-4xl mb-3">⚠️</div>
+                    <p class="text-lg">Error en la búsqueda</p>
+                    <p class="text-sm mt-2">Por favor intenta de nuevo</p>
+                </div>
+            `);
         }
     });
 }
@@ -1469,13 +1518,17 @@ function view_character_details(character_name) {
     console.log('Requesting character details for:', cleaned_name); // Debug log
     console.log('Original character name:', character_name); // Debug log
     
-    // Try get_character_details first
-    frappe.call({
-        method: 'dragon_ball_app.db_app.dashboard.dashboard.get_character_details',
-        args: {
+    // Try get_character_details first using AJAX
+    $.ajax({
+        url: '/api/method/dragon_ball_app.db_app.dashboard.dashboard.get_character_details',
+        type: 'POST',
+        headers: {
+            'X-Frappe-CSRF-Token': getCSRFToken()
+        },
+        data: {
             character_name: cleaned_name
         },
-        callback: function(r) {
+        success: function(r) {
             console.log('Full response received:', r); // Debug log
             console.log('Response message:', r.message); // Debug log
             
@@ -1487,12 +1540,13 @@ function view_character_details(character_name) {
                 try_search_fallback(cleaned_name, character_name, r);
             }
         },
-        error: function(r) {
-            console.error('Error loading character:', r); // Debug log
+        error: function(xhr, status, error) {
+            console.error('Error loading character:', error); // Debug log
+            console.error('XHR status:', status, xhr.responseText); // Additional debug info
             
             // If there's an error, try search method as fallback
             console.log('get_character_details error, trying search method...');
-            try_search_fallback(cleaned_name, character_name, r);
+            try_search_fallback(cleaned_name, character_name, {error: error, status: status});
         }
     });
 }
@@ -1510,12 +1564,16 @@ function try_search_fallback(cleaned_name, original_name, original_response) {
         </div>
     `);
     
-    frappe.call({
-        method: 'dragon_ball_app.db_app.dashboard.dashboard.search_characters',
-        args: {
+    $.ajax({
+        url: '/api/method/dragon_ball_app.db_app.dashboard.dashboard.search_characters',
+        type: 'POST',
+        headers: {
+            'X-Frappe-CSRF-Token': getCSRFToken()
+        },
+        data: {
             search_term: cleaned_name
         },
-        callback: function(r) {
+        success: function(r) {
             if (r.message && r.message.length > 0) {
                 // Find exact match
                 var exact_match = r.message.find(char => 
@@ -1566,9 +1624,10 @@ function try_search_fallback(cleaned_name, original_name, original_response) {
                 show_detailed_error(cleaned_name, original_name, original_response);
             }
         },
-        error: function(search_error) {
-            console.error('Search fallback also failed:', search_error);
-            show_detailed_error(cleaned_name, original_name, original_response, search_error);
+        error: function(xhr, status, error) {
+            console.error('Search fallback also failed:', error);
+            console.error('XHR status:', status, xhr.responseText);
+            show_detailed_error(cleaned_name, original_name, original_response, {error: error, status: status});
         }
     });
 }
@@ -1653,20 +1712,28 @@ function test_character_search(character_name) {
     Promise.all([
         // Test exact search
         new Promise((resolve) => {
-            frappe.call({
-                method: 'dragon_ball_app.db_app.dashboard.dashboard.search_characters',
-                args: { search_term: character_name },
-                callback: (r) => resolve({method: 'search', result: r.message || []}),
-                error: (r) => resolve({method: 'search', error: r})
+            $.ajax({
+                url: '/api/method/dragon_ball_app.db_app.dashboard.dashboard.search_characters',
+                type: 'POST',
+                headers: {
+                    'X-Frappe-CSRF-Token': getCSRFToken()
+                },
+                data: { search_term: character_name },
+                success: (r) => resolve({method: 'search', result: r.message || []}),
+                error: (xhr, status, error) => resolve({method: 'search', error: {error: error, status: status}})
             });
         }),
         // Test get_character_details with exact name
         new Promise((resolve) => {
-            frappe.call({
-                method: 'dragon_ball_app.db_app.dashboard.dashboard.get_character_details',
-                args: { character_name: character_name },
-                callback: (r) => resolve({method: 'get_details', result: r.message}),
-                error: (r) => resolve({method: 'get_details', error: r})
+            $.ajax({
+                url: '/api/method/dragon_ball_app.db_app.dashboard.dashboard.get_character_details',
+                type: 'POST',
+                headers: {
+                    'X-Frappe-CSRF-Token': getCSRFToken()
+                },
+                data: { character_name: character_name },
+                success: (r) => resolve({method: 'get_details', result: r.message}),
+                error: (xhr, status, error) => resolve({method: 'get_details', error: {error: error, status: status}})
             });
         })
     ]).then(results => {
