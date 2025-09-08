@@ -301,13 +301,30 @@ $(document).ready(function() {
     frappe.ready(function() {
         console.log('Dragon Ball Dashboard: Frappe Ready');
         
-        // Check user authentication first
-        check_user_authentication();
-        
-        // Then load dashboard data
-        load_dashboard_data();
-        setup_search();
-        window.dashboard_initialized = true;
+        // Quick API test first
+        console.log('Dragon Ball Dashboard: Testing API connection...');
+        frappe.call({
+            method: 'frappe.auth.get_logged_user',
+            callback: function(r) {
+                console.log('Dragon Ball Dashboard: API Test successful, user:', r.message);
+                
+                // Check user authentication first
+                check_user_authentication();
+                
+                // Then load dashboard data
+                load_dashboard_data();
+                setup_search();
+                window.dashboard_initialized = true;
+            },
+            error: function(r) {
+                console.error('Dragon Ball Dashboard: API Test failed:', r);
+                // Still try to load dashboard data
+                check_user_authentication();
+                load_dashboard_data();
+                setup_search();
+                window.dashboard_initialized = true;
+            }
+        });
     });
 });
 
@@ -374,29 +391,38 @@ var gallery_total_pages = 1;
 var pagination_initialized = false;
 
 function load_dashboard_data() {
+    console.log('Dragon Ball Dashboard: Starting load_dashboard_data()');
     show_loading();
     
     // Load all data at once for client-side pagination
+    console.log('Dragon Ball Dashboard: Making frappe.call to get_dashboard_data');
     frappe.call({
         method: 'dragon_ball_app.db_app.dashboard.dashboard.get_dashboard_data',
         callback: function(r) {
+            console.log('Dragon Ball Dashboard: API Response received:', r);
             hide_loading();
             if (r.message) {
+                console.log('Dragon Ball Dashboard: Processing response data:', r.message);
                 original_dashboard_data = r.message;
                 
                 // Use the existing data from get_dashboard_data for client-side pagination
                 all_warriors_data = r.message.top_ki_characters || [];
                 all_gallery_data = r.message.recent_characters || [];
                 
-                console.log('Loaded data:', {
+                console.log('Dragon Ball Dashboard: Loaded data:', {
+                    total_characters: r.message.total_characters,
                     total_warriors: all_warriors_data.length,
-                    total_gallery: all_gallery_data.length
+                    total_gallery: all_gallery_data.length,
+                    race_distribution: r.message.race_distribution ? r.message.race_distribution.length : 0
                 });
                 
+                console.log('Dragon Ball Dashboard: Calling render_dashboard()');
                 render_dashboard(r.message);
                 initialize_client_side_pagination();
                 window.dashboard_initialized = true;
+                console.log('Dragon Ball Dashboard: Dashboard initialization complete');
             } else {
+                console.warn('Dragon Ball Dashboard: No message in response, showing no data message');
                 // Check if user is authenticated before showing sync button
                 var is_logged_in = frappe.session && frappe.session.user && frappe.session.user !== 'Guest';
                 var sync_button_html = is_logged_in ? `
@@ -417,6 +443,13 @@ function load_dashboard_data() {
             }
         },
         error: function(r) {
+            console.error('Dragon Ball Dashboard: API Error occurred:', r);
+            console.error('Dragon Ball Dashboard: Error details:', {
+                status: r.status,
+                statusText: r.statusText,
+                responseText: r.responseText,
+                responseJSON: r.responseJSON
+            });
             hide_loading();
             console.error('Error loading dashboard:', r);
             
@@ -890,6 +923,8 @@ function update_client_data_for_sorting(sorted_data) {
 // ================== END CLIENT-SIDE PAGINATION FUNCTIONS ==================
 
 function render_dashboard(data) {
+    console.log('Dragon Ball Dashboard: render_dashboard() called with data:', data);
+    
     // Calculate the highest Ki level correctly using the parseKiValue function
     var highest_ki = 0;
     var strongest_character = null;
