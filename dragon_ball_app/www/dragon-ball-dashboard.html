@@ -396,9 +396,17 @@ function load_dashboard_data() {
     
     // Load all data at once for client-side pagination
     console.log('Dragon Ball Dashboard: Making frappe.call to get_dashboard_data');
-    frappe.call({
-        method: 'dragon_ball_app.db_app.dashboard.dashboard.get_dashboard_data',
-        callback: function(r) {
+    
+    // Use explicit URL and AJAX call instead of frappe.call
+    $.ajax({
+        url: '/api/method/dragon_ball_app.db_app.dashboard.dashboard.get_dashboard_data',
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        headers: {
+            'X-Frappe-CSRF-Token': frappe.csrf_token
+        },
+        success: function(r) {
             console.log('Dragon Ball Dashboard: API Response received:', r);
             hide_loading();
             if (r.message) {
@@ -442,25 +450,25 @@ function load_dashboard_data() {
                 `);
             }
         },
-        error: function(r) {
-            console.error('Dragon Ball Dashboard: API Error occurred:', r);
-            console.error('Dragon Ball Dashboard: Error details:', {
-                status: r.status,
-                statusText: r.statusText,
-                responseText: r.responseText,
-                responseJSON: r.responseJSON
+        error: function(xhr, status, error) {
+            console.error('Dragon Ball Dashboard: AJAX Error occurred:', {
+                xhr: xhr,
+                status: status,
+                error: error,
+                responseText: xhr.responseText,
+                responseJSON: xhr.responseJSON
             });
             hide_loading();
-            console.error('Error loading dashboard:', r);
+            console.error('Error loading dashboard:', xhr);
             
             // More detailed error information for debugging
             var errorDetails = '';
-            if (r && r.responseJSON && r.responseJSON.message) {
-                errorDetails = r.responseJSON.message;
-            } else if (r && r.statusText) {
-                errorDetails = `HTTP ${r.status}: ${r.statusText}`;
-            } else if (r && r.message) {
-                errorDetails = r.message;
+            if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                errorDetails = xhr.responseJSON.message;
+            } else if (xhr && xhr.statusText) {
+                errorDetails = `HTTP ${xhr.status}: ${xhr.statusText}`;
+            } else if (error) {
+                errorDetails = error;
             }
             
             $('#dashboard-content').html(`
